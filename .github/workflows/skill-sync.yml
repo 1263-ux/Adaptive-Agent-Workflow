@@ -1,4 +1,4 @@
-name: Skill package sync
+name: Workflow package checks
 
 on:
   push:
@@ -6,21 +6,31 @@ on:
       - "skills/adaptive-agent-workflow/**"
       - ".agents/skills/adaptive-agent-workflow/**"
       - ".claude/skills/adaptive-agent-workflow/**"
-      - "scripts/sync_skills.py"
+      - ".codex/hooks.json"
+      - ".claude/settings.json"
+      - "scripts/**"
+      - "tests/**"
+      - "docs/**"
+      - "hooks/**"
       - ".github/workflows/skill-sync.yml"
   pull_request:
     paths:
       - "skills/adaptive-agent-workflow/**"
       - ".agents/skills/adaptive-agent-workflow/**"
       - ".claude/skills/adaptive-agent-workflow/**"
-      - "scripts/sync_skills.py"
+      - ".codex/hooks.json"
+      - ".claude/settings.json"
+      - "scripts/**"
+      - "tests/**"
+      - "docs/**"
+      - "hooks/**"
       - ".github/workflows/skill-sync.yml"
 
 permissions:
   contents: read
 
 jobs:
-  check-skill-mirrors:
+  package-and-hook-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,3 +39,11 @@ jobs:
           python-version: "3.x"
       - name: Check generated Skill mirrors
         run: python scripts/sync_skills.py --check
+      - name: Validate Python hook syntax
+        run: python -m py_compile scripts/adaptive_checkpoint.py
+      - name: Test adaptive checkpoint behavior
+        run: python -m unittest discover -s tests -v
+      - name: Validate host hook JSON
+        run: |
+          python -c "import json; json.load(open('.codex/hooks.json', encoding='utf-8'))"
+          python -c "import json; json.load(open('.claude/settings.json', encoding='utf-8'))"

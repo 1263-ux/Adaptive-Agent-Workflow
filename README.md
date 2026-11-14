@@ -16,7 +16,8 @@
 4. [Capability discovery and mounting](skills/adaptive-agent-workflow/references/capability-discovery.md)
 5. [Dynamic organization](skills/adaptive-agent-workflow/references/organization.md)
 6. [Host adapter notes](skills/adaptive-agent-workflow/references/host-adapters.md)
-7. [Design overview](DESIGN-v0.1.md)
+7. [Adaptive checkpoint hooks](docs/adaptive-checkpoint.md)
+8. [Design overview](DESIGN-v0.1.md)
 8. [Runtime smoke tests](docs/smoke-test.md)
 
 ## Canonical source and host packages

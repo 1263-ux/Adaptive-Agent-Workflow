@@ -1,0 +1,21 @@
+# Lightweight catalog record; illustrative, not a strict JSON Schema.
+name: example-capability
+description: What problem this capability solves
+capability_types: [skill] # skill | methodology | tool | reference | workflow
+source:
+  kind: github # builtin | user-provided | official | github | local | other
+  uri: https://github.com/example/project
+  version: release-or-commit
+applicability: [task-type, conditions]
+not_for: []
+requirements:
+  hosts: []
+  tools: []
+  permissions: []
+trust:
+  status: unreviewed # unreviewed | inspected | trusted | restricted
+  notes: ''
+usage:
+  loading: on_demand # on_demand | project_scoped | session_scoped
+  estimated_cost: unknown
+observations: []

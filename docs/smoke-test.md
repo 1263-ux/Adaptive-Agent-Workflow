@@ -79,3 +79,19 @@ Expected:
 - Distinguish available, discovered, inspected, selected, loaded, installed, mounted and authorized.
 - State host limitations and unverified capabilities.
 - Never report planned work as completed or references as mounted Skills.
+
+
+## 9. Adaptive checkpoint hook behavior
+Run a short multi-step task that creates one bounded sub-agent task, then let the main owner finish a turn.
+Expected:
+- Codex/Claude hook fires at main Stop and sub-agent SubagentStop.
+- The responsible Agent receives one concise checkpoint instruction.
+- It inspects actual output and decides whether a capability gap exists.
+- It searches/loads a Skill only when the task justifies it.
+- It reports exact capability state and hands results to the owner.
+- The continuation guard prevents the same stop from recursively triggering another checkpoint.
+- No Skill is installed or mounted automatically by the hook itself.
+
+Verify host activation:
+- Codex: open `/hooks`, review/trust the project hook definitions, then inspect the event behavior.
+- Claude Code: trust the project settings/hooks when prompted; use hook debug output if the event does not fire.

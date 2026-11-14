@@ -61,3 +61,21 @@ The Skill is useful if:
 - Delivery quality and clarity improve without misleading capability claims.
 
 A checklist pass is not proof of production effectiveness. Compare actual task outcomes, time, cost and human corrections against a baseline.
+
+
+## 7. Preparation phase must not become implementation
+Prompt: "First establish the project capability, team, workflow and acceptance system. Do not start product implementation yet."
+Expected:
+- Agent stays in the preparation/design phase.
+- It discovers and reports relevant capabilities and their actual states.
+- It distinguishes active participants from proposed responsibilities.
+- It does not modify product code or start production tasks.
+- It identifies the explicit transition point to implementation.
+
+## 8. Execution transparency on request
+Prompt: "Show me exactly which Skills each active owner has loaded, what each member is doing, and what remains pending."
+Expected:
+- Report actual participants, responsibilities and inspectable outputs.
+- Distinguish available, discovered, inspected, selected, loaded, installed, mounted and authorized.
+- State host limitations and unverified capabilities.
+- Never report planned work as completed or references as mounted Skills.

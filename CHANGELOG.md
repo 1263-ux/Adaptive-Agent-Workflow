@@ -28,3 +28,10 @@
 - Require factual per-owner capability states and distinguish active participants from proposed roles.
 - Add conditional team-organization guidance for capability ownership and phase separation.
 - Extend runtime smoke tests for phase fidelity and execution transparency.
+
+## 0.3.0 — 2026-11-14
+- Add adaptive checkpoint hooks for main-owner Stop and sub-agent SubagentStop events in Codex and Claude Code.
+- Add a shared standard-library Python handler with recursion protection and host-specific output protocols.
+- Add hook event contract, setup/limitations documentation and behavioral tests.
+- Extend CI to validate Skill mirrors, Python syntax, hook behavior and host hook JSON.
+- Hooks prompt the responsible Agent to reassess results and capability fit; they do not autonomously install Skills or grant permissions.

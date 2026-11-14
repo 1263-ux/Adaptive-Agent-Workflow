@@ -7,9 +7,9 @@ from pathlib import Path
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "adaptive_checkpoint.py"
 
 
-def invoke(payload):
+def invoke(payload, *args):
     return subprocess.run(
-        [sys.executable, str(SCRIPT)],
+        [sys.executable, str(SCRIPT), *args],
         input=json.dumps(payload),
         text=True,
         capture_output=True,
@@ -49,8 +49,7 @@ class AdaptiveCheckpointTests(unittest.TestCase):
         result = invoke({
             "hook_event_name": "Stop",
             "stop_hook_active": False,
-            "_host": "claude-code",
-        })
+        }, "--host=claude-code")
         data = json.loads(result.stdout)
         self.assertEqual(data["hookSpecificOutput"]["hookEventName"], "Stop")
         self.assertIn("main task owner", data["hookSpecificOutput"]["additionalContext"])

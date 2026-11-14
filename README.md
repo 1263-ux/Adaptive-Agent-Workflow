@@ -6,7 +6,7 @@
 
 ## Status
 
-**v0.2.1 — canonical Skill package with generated host mirrors; no custom Agent Runtime.**
+**v0.3.0 — adaptive checkpoint hooks for Codex and Claude Code; no custom Agent Runtime.**
 
 ## Start here
 
@@ -18,7 +18,7 @@
 6. [Host adapter notes](skills/adaptive-agent-workflow/references/host-adapters.md)
 7. [Adaptive checkpoint hooks](docs/adaptive-checkpoint.md)
 8. [Design overview](DESIGN-v0.1.md)
-8. [Runtime smoke tests](docs/smoke-test.md)
+9. [Runtime smoke tests](docs/smoke-test.md)
 
 ## Canonical source and host packages
 
@@ -39,7 +39,9 @@ Check for drift without modifying files:
 python scripts/sync_skills.py --check
 ```
 
-GitHub Actions checks mirror consistency on relevant pushes and pull requests. Do not edit generated host copies directly.
+GitHub Actions checks mirror consistency, hook syntax/behavior and host configuration JSON on relevant pushes and pull requests. Do not edit generated host copies directly.
+
+Optional adaptive checkpoint hooks are configured for Codex and Claude Code. Review/trust them in the host before use; see [hook setup and limitations](docs/adaptive-checkpoint.md).
 
 ## Core principles
 

@@ -31,7 +31,7 @@ Design baseline: **v0.1-draft**. This repository contains architecture and opera
 
 ## Related evaluation assets
 
-The companion repository [open-agent-evals](https://github.com/1263-ux/open-agent-evals) maintains reusable evaluation packs, method assets, experiment records and capability profiles. This framework may consume those assets to select methods and assess outcomes.
+The companion repository [open-agent-evals](https://github.com/1263-ux/open-agent-evals) maintains reusable Evaluation Packs, Method Assets, Experiment Records and Capability Profiles. This framework discovers and organizes work using those assets; the evaluation repository links back here as its execution framework. The two repositories are independently versioned and connected through asset IDs, versions and Git references.
 
 ## What this is not
 

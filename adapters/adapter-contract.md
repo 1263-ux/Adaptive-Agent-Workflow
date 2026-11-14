@@ -24,4 +24,4 @@ Use NATIVE, EMULATED, UNSUPPORTED or UNVERIFIED, with host/version evidence. Do 
 Host features are not portable by assumption. Role prompts do not create permission isolation. Skill discovery is not mounting; mounting is not authorization. If nested dispatch is unsupported, use top-level dispatch or a flat queue. Domain methods remain external.
 
 ## Current status
-No executable adapter plugin is implemented. Host-specific Skill entry points and operational notes are provided for Codex and Claude Code; other hosts use the portable Skill. Native per-Agent mounting, nested delegation and permission isolation must still be verified against the installed host/version. See references/host-adapters.md.
+No executable adapter plugin is implemented. Host-specific Skill entry points and operational notes are provided for Codex and Claude Code; other hosts use the portable Skill. Native per-Agent mounting, nested delegation and permission isolation must still be verified against the installed host/version. See skills/adaptive-agent-workflow/references/host-adapters.md.

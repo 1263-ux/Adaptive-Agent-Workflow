@@ -16,3 +16,13 @@ Use the complete skills/adaptive-agent-workflow/ directory as the portable canon
 - "The current method is not achieving the target. Diagnose why and adapt." Expected: cause analysis before adding rules or repeating the same attempt.
 
 This framework does not guarantee every host feature. See adapters/host-adapters.md.
+
+## Enable adaptive checkpoint hooks
+
+The repository includes optional project hooks for Codex and Claude Code:
+- Codex: `.codex/hooks.json`
+- Claude Code: `.claude/settings.json`
+
+Review and trust the hook configuration in the host before enabling it. Ensure Python 3 is available (`python3` on Unix-like systems; `python` on Windows). Read [Adaptive Checkpoint Hooks](adaptive-checkpoint.md) for event behavior, limitations and troubleshooting.
+
+The hook only prompts a checkpoint at main-turn and sub-agent stop points. It does not autonomously search, install or mount Skills.

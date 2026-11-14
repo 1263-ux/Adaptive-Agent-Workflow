@@ -1,0 +1,31 @@
+{
+  "description": "Adaptive Agent Workflow: review task outcomes and capability fit at owner/subagent stop points.",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\"",
+            "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\"",
+            "timeout": 10,
+            "statusMessage": "Adaptive workflow checkpoint"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\"",
+            "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\"",
+            "timeout": 10,
+            "statusMessage": "Reviewing sub-agent handoff"
+          }
+        ]
+      }
+    ]
+  }
+}

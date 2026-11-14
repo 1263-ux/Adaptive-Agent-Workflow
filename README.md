@@ -21,6 +21,7 @@ The repository now includes executable Agent Skills for Codex and Claude Code, p
 7. [Capability discovery and mounting](references/capability-discovery.md)
 8. [Dynamic organization](references/organization.md)
 9. [Host adapter notes](references/host-adapters.md)
+10. [Runtime smoke tests](docs/smoke-test.md)
 
 ## Core principles
 

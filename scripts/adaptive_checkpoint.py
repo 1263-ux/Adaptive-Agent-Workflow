@@ -8,6 +8,7 @@ It does not search for, install, load, or authorize Skills by itself.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from typing import Any
 
@@ -52,7 +53,7 @@ def main() -> int:
 
     message = f"{CHECKPOINT}\nCurrent event: {name}. Current participant: {role}. {target}"
 
-    if str(event.get("source") or "").lower() == "claude-code":
+    if (str(event.get("source") or "").lower() == "claude-code"\n            or event.get("_host") == "claude-code"\n            or os.environ.get("CLAUDE_PROJECT_DIR")):
         # This branch is available for direct local tests; Claude's config adds this marker.
         output = {
             "hookSpecificOutput": {

@@ -39,7 +39,7 @@ A checkpoint does not mean a new Skill must be loaded every time.
 
 The repository includes `.codex/hooks.json`. Open the repository in Codex, inspect the project hooks with `/hooks`, and explicitly review/trust the definitions before use. Project hooks load only when the project is trusted.
 
-The configured commands use `python3` on Unix-like systems and `python` on Windows. Ensure Python 3 is on PATH. If your local launcher differs, edit the command in `.codex/hooks.json`.
+The Codex commands use `python3` on Unix-like systems and `python` on Windows. The Claude Code commands use `python` with the project-directory variable. Ensure the selected launcher points to Python 3; adjust the command in the relevant host configuration if your environment uses a different launcher.
 
 Codex Stop/SubagentStop continuation uses a hook `decision: block` with a reason that becomes the next continuation prompt. It is not the same output protocol as Claude Code.
 

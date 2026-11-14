@@ -7,7 +7,7 @@ This repository includes a project Skill at .agents/skills/adaptive-agent-workfl
 This repository includes a project Skill at .claude/skills/adaptive-agent-workflow/SKILL.md. Open the repository in Claude Code and invoke it or let the host match the task.
 
 ## Other hosts
-Use skills/adaptive-agent-workflow/SKILL.md as the portable canonical copy. Install it in the host's documented Skill location if supported; otherwise expose its instructions using the documented mechanism.
+Use the complete skills/adaptive-agent-workflow/ directory as the portable canonical Skill package. It includes its own references. Install/copy the whole directory into the host's documented Skill location if supported; otherwise expose its instructions using the documented mechanism.
 
 ## Smoke prompts
 - "Fix this small local bug." Expected: direct execution, no unnecessary team.

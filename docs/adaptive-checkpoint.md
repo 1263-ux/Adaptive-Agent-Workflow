@@ -49,7 +49,7 @@ Official reference: https://learn.chatgpt.com/docs/hooks
 
 The repository includes `.claude/settings.json`. Open the project in Claude Code and review/trust the project settings/hooks when prompted. The command uses `python`; ensure Python 3 is available as `python` on PATH. If not, change it to your local Python launcher.
 
-Claude Code Stop/SubagentStop hooks inject `hookSpecificOutput.additionalContext`. They do not block task completion in this configuration.
+Claude Code Stop/SubagentStop hooks inject `hookSpecificOutput.additionalContext`. On SubagentStop the context is delivered to the sub-agent so it can prepare its handoff; the parent receives the handoff as the sub-agent result and then performs its own Stop checkpoint. These hooks do not block task completion in this configuration.
 
 Official reference: https://code.claude.com/docs/en/hooks
 

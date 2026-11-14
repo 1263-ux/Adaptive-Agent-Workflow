@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/adaptive_checkpoint.py\"",
+            "timeout": 10,
+            "statusMessage": "Adaptive workflow checkpoint"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/adaptive_checkpoint.py\"",
+            "timeout": 10,
+            "statusMessage": "Reviewing sub-agent handoff"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Emit a lightweight Adaptive Agent Workflow checkpoint for supported host hooks.
-
-The hook observes lifecycle events and nudges the responsible Agent to review.
-It does not search for, install, load, or authorize Skills by itself.
-"""
+"""Emit a lightweight Adaptive Agent Workflow checkpoint for supported host hooks."""
 
 from __future__ import annotations
 
@@ -35,8 +31,7 @@ def main() -> int:
     if name not in {"Stop", "SubagentStop"}:
         return 0
 
-    # Host-level recursion guard: the checkpoint itself may cause another turn.
-    # Do not ask for another checkpoint during the continuation of the same stop.
+    # Prevent a continuation prompt from recursively triggering itself.
     if event.get("stop_hook_active") is True:
         return 0
 
@@ -52,16 +47,13 @@ def main() -> int:
         )
 
     message = f"{CHECKPOINT}\nCurrent event: {name}. Current participant: {role}. {target}"
+    is_claude = (
+        str(event.get("source") or "").lower() == "claude-code"
+        or event.get("_host") == "claude-code"
+        or bool(os.environ.get("CLAUDE_PROJECT_DIR"))
+    )
 
-    if (str(event.get("source") or "").lower() == "claude-code"\n            or event.get("_host") == "claude-code"\n            or os.environ.get("CLAUDE_PROJECT_DIR")):
-        # This branch is available for direct local tests; Claude's config adds this marker.
-        output = {
-            "hookSpecificOutput": {
-                "hookEventName": name,
-                "additionalContext": message,
-            }
-        }
-    elif event.get("_host") == "claude-code":
+    if is_claude:
         output = {
             "hookSpecificOutput": {
                 "hookEventName": name,
@@ -69,7 +61,7 @@ def main() -> int:
             }
         }
     else:
-        # Codex Stop/SubagentStop use a continuation reason rather than additionalContext.
+        # Codex Stop/SubagentStop use a continuation reason, not additionalContext.
         output = {
             "decision": "block",
             "reason": message,

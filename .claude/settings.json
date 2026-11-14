@@ -1,28 +1,10 @@
 {
   "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PROJECT_DIR}/scripts/adaptive_checkpoint.py\" --host=claude-code",
-            "timeout": 10,
-            "statusMessage": "Adaptive workflow checkpoint"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PROJECT_DIR}/scripts/adaptive_checkpoint.py\" --host=claude-code",
-            "timeout": 10,
-            "statusMessage": "Reviewing sub-agent handoff"
-          }
-        ]
-      }
-    ]
+    "SessionStart": [{"hooks": [{"type": "command", "command": "python \"${CLAUDE_PROJECT_DIR}/scripts/adaptive_checkpoint.py\" --host=claude-code --project \"${CLAUDE_PROJECT_DIR}\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python \"${CLAUDE_PROJECT_DIR}/scripts/adaptive_checkpoint.py\" --host=claude-code --project \"${CLAUDE_PROJECT_DIR}\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "PreToolUse": [{"matcher": "^(Agent|Task|spawn_agent)$", "hooks": [{"type": "command", "command": "python \"${CLAUDE_PROJECT_DIR}/scripts/adaptive_checkpoint.py\" --host=claude-code --project \"${CLAUDE_PROJECT_DIR}\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "PostToolUse": [{"matcher": "^(Agent|Task|spawn_agent|wait|wait_agent|TaskOutput)$", "hooks": [{"type": "command", "command": "python \"${CLAUDE_PROJECT_DIR}/scripts/adaptive_checkpoint.py\" --host=claude-code --project \"${CLAUDE_PROJECT_DIR}\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "SubagentStop": [{"hooks": [{"type": "command", "command": "python \"${CLAUDE_PROJECT_DIR}/scripts/adaptive_checkpoint.py\" --host=claude-code --project \"${CLAUDE_PROJECT_DIR}\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "Stop": [{"hooks": [{"type": "command", "command": "python \"${CLAUDE_PROJECT_DIR}/scripts/adaptive_checkpoint.py\" --host=claude-code --project \"${CLAUDE_PROJECT_DIR}\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}]
   }
 }

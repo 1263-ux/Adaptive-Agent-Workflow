@@ -1,12 +1,7 @@
-# Adaptive Checkpoint Hook Prototype
+# Owner-loop hooks
 
-This folder documents the host hook prototype. The executable handler is `scripts/adaptive_checkpoint.py`.
+Install the complete Skill and event wiring into the work project with `python scripts/install_workflow.py --project /path/to/project --host both`.
 
-- Codex config: `.codex/hooks.json`
-- Claude Code config: `.claude/settings.json`
-- Design and limitations: `docs/adaptive-checkpoint.md`
-- Logical event contract: `skills/adaptive-agent-workflow/references/hook-events.md`
+The executable source is `skills/adaptive-agent-workflow/scripts/adaptive_checkpoint.py`. The root script is a compatibility entry point. The [event contract](../skills/adaptive-agent-workflow/references/hook-events.md) and [setup guide](../docs/quickstart.md) describe the current behavior.
 
-The hook is a trigger, not an autonomous Skill installer. It injects a short checkpoint instruction; the Agent performs the actual review and decides whether capability discovery or team changes are needed.
-
-Install/enable hooks only after reviewing and trusting the project configuration in the host.
+SubagentStop records the child's handoff; the parent's delegation/collection return is where integration work is requested. Startup/resume carries the current-work note. The handlers do not install Skills or grant tool permissions.

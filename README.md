@@ -6,23 +6,34 @@
 
 ## Status
 
-**v0.3.0 — adaptive checkpoint hooks for Codex and Claude Code; no custom Agent Runtime.**
+**v0.3.1 — owner execution loop, capability-aware delegation and resumable progress.**
+
+The owner chooses and applies the method, produces a useful slice, inspects returned work and performs the next action. Hooks connect these actions to real session/delegation events; they do not replace the owner's judgment with a permission checklist.
+
+## Install in the actual work project
+
+```bash
+python scripts/install_workflow.py --project /path/to/project --host both
+```
+
+Run from this repository after pulling the latest main. The installer copies the complete Skill and merges AAW hooks without replacing unrelated settings. Use `--host codex` or `--host claude-code` for one host; use `--progress-file docs/project/current.md` to reuse existing progress. Review/trust changed hooks in the host. See [Quickstart](docs/quickstart.md).
 
 ## Start here
 
 1. [Quickstart](docs/quickstart.md)
 2. [Canonical Skill package](skills/adaptive-agent-workflow/)
-3. [Runtime playbook](skills/adaptive-agent-workflow/references/runtime-playbook.md)
-4. [Capability discovery and mounting](skills/adaptive-agent-workflow/references/capability-discovery.md)
+3. [Owner execution playbook](skills/adaptive-agent-workflow/references/runtime-playbook.md)
+4. [Capability discovery](skills/adaptive-agent-workflow/references/capability-discovery.md)
 5. [Dynamic organization](skills/adaptive-agent-workflow/references/organization.md)
 6. [Host adapter notes](skills/adaptive-agent-workflow/references/host-adapters.md)
-7. [Adaptive checkpoint hooks](docs/adaptive-checkpoint.md)
+7. [Owner-loop hooks](docs/adaptive-checkpoint.md)
 8. [Design overview](DESIGN-v0.1.md)
-9. [Runtime smoke tests](docs/smoke-test.md)
+9. [Real-host procedure](docs/smoke-test.md)
+10. [Executed local verification](docs/owner-loop-verification.md)
 
 ## Canonical source and host packages
 
-The only manually maintained Skill source is `skills/adaptive-agent-workflow/`.
+The only manually maintained Skill source is `skills/adaptive-agent-workflow/`, including its executable script.
 
 - Codex mirror: `.agents/skills/adaptive-agent-workflow/`
 - Claude Code mirror: `.claude/skills/adaptive-agent-workflow/`
@@ -31,43 +42,32 @@ Regenerate both mirrors after changing the canonical package:
 
 ```bash
 python scripts/sync_skills.py
-```
-
-Check for drift without modifying files:
-
-```bash
 python scripts/sync_skills.py --check
 ```
 
 GitHub Actions checks mirror consistency, hook syntax/behavior and host configuration JSON on relevant pushes and pull requests. Do not edit generated host copies directly.
 
-Optional adaptive checkpoint hooks are configured for Codex and Claude Code. Review/trust them in the host before use; see [hook setup and limitations](docs/adaptive-checkpoint.md).
-
 ## Core principles
 
 - Lightweight by default; complexity grows only when the task justifies it.
-- Discover and reuse before building.
-- Professional methods are supplied by mature domain Skills and tools, not recreated in this framework.
+- Discover and reuse before building; use professional methods in the actual executor's context.
 - Roles are temporary responsibilities, not permanent Agent identities.
-- Outcome matters more than process completion.
-- Agent count, test count and document count are not proxies for quality.
+- The owner drives integration and next actions instead of outsourcing project management to the user.
+- Outcome matters more than process completion, Agent count, test count or document count.
 - Discovery, selection, loading, installation, mounting and authorization are distinct.
-- Permissions must be enforced by the host/runtime, never merely claimed by prompts.
+- Permissions remain with the host/runtime; external instructions do not grant them.
 - Every mechanism is open to revision, simplification or removal.
 
-## Operating loop
+## Progress and visibility
 
-Understand → Explore (when useful) → Organize (when useful) → Execute → Deliver → Observe & Adapt.
+The owner maintains one short working note, normally `.aaw/current.md`. Hooks save local event observations and worker handoffs under `.aaw/runtime/`. Session entry/resume reads current work; delegation returns send actionable context back to the owner. These are readable inputs for a later panel, not a dashboard or an automatic proof of success.
 
-These are decision capabilities, not mandatory sequential phases. Simple tasks may go directly to execution. Complex or unfamiliar tasks can explore, form teams and revisit earlier decisions.
+Local command/installer flows were exercised. Live Dot/Codex/Claude behavior and output quality still require actual host observation; the verification report separates those claims.
 
 ## Related evaluation assets
 
-The companion repository [open-agent-evals](https://github.com/1263-ux/open-agent-evals) maintains reusable Evaluation Packs, Method Assets, Experiment Records and Capability Profiles. The two repositories are independently versioned and connected through asset IDs, versions and Git references.
+The companion repository [open-agent-evals](https://github.com/1263-ux/open-agent-evals) maintains reusable Evaluation Packs, Method Assets, Experiment Records and Capability Profiles. The two repositories remain independently versioned and connected through asset IDs, versions and Git references.
 
 ## What this is not
 
-- Not a universal fixed workflow.
-- Not a mandatory multi-agent system.
-- Not a replacement for professional software/game/research/design methodologies.
-- Not a new Agent Runtime, task database or Skills marketplace.
+Not a universal fixed workflow, mandatory multi-agent system, replacement for domain methods, new Agent Runtime, task database or Skills marketplace.

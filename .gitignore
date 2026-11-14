@@ -1,0 +1,4 @@
+.aaw/runtime/
+*.aaw-backup
+__pycache__/
+*.pyc

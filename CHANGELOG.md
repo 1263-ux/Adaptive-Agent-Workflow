@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1 — 2026-11-15
+- Replace the generic Stop-only reminder with owner entry/resume, capability-aware delegation and parent-side result integration.
+- Append execution instructions and current capability references to actual child prompts without changing permissions.
+- Save worker reports for owner inspection rather than restarting children to self-review.
+- Read one project working note on resume; continue only active saved work at Stop.
+- Add a project installer that copies the complete portable package, pins executable/project paths and preserves unrelated hooks/settings.
+- Move executable ownership into the canonical Skill, keeping the root command as a compatibility entry point.
+- Execute subprocess, persistence and installer scenarios locally; distinguish these from unperformed live-host task-quality tests.
+
 ## 0.2.0 — 2026-11-14
 - Add installable project Skills for Codex and Claude Code.
 - Add a portable canonical Skill.

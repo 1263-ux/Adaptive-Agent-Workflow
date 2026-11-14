@@ -1,59 +1,49 @@
-# Runtime Playbook
+# Owner execution loop
 
-This is operational guidance, not a mandatory pipeline.
+## Default behavior
 
-## Start with the outcome and requested phase
-Establish the desired outcome, deliverables, hard constraints, permissions, available context and important unknowns. Identify the phase the user authorized: exploration, system design, preparation, implementation, verification or delivery.
+The user gives the outcome. The owner supplies the short plan, suitable methods, actual executor/tool setup, first useful deliverable, integration and next action. The owner keeps working within the authorized scope rather than asking the user to manage each step.
 
-Respect phase boundaries. If the user asks to establish the development system first, do not begin product implementation, modify product code or dispatch production tasks. Complete the requested preparation and present the transition point. Do not interpret a general goal as permission to skip an explicitly requested sequence.
+For simple work, do it directly. For specialist work, inspect the relevant available Skills/tool inventory before producing the specialist result. Familiar, working capabilities are reused; external discovery is for an actual gap, not a ritual. Exploration and executable probes are valid work, not something blocked until a full plan is written.
 
-Ask only when missing information could materially change the result or an irreversible action. Discover what can safely be discovered.
+## From capability to actual work
 
-## Choose the smallest useful work mode
-- **Direct:** clear, local, low-risk.
-- **Capability-assisted:** a specialist method is useful.
-- **Explore / Probe:** important unknowns or an unfamiliar domain.
-- **Sequential:** strong dependencies or shared mutable state.
-- **Parallel / Team:** independent outputs, specialist expertise, useful parallelism or context isolation.
-- **Guarded:** high-impact or irreversible work requiring tighter permissions and checks.
+A capability assignment is concrete: “use `<path or pinned source>`, apply `<method relevant to this output>`, use `<available tools>`, produce `<artifact>`.” The executor reads the selected instructions in its own context and uses the method. If a needed MCP tool is unavailable, fix/replace that dependency within authorization or state the blocker. Do not merely rename an ordinary worker as a specialist.
 
-Task size alone does not justify delegation. Consider independence, time saved, expertise gain, context isolation, risk and integration cost.
+Skill discovery can be delegated. The investigator returns a usable source, requirements and recommendation; the producer receives that capability and applies it. Do not stop at collecting Skill links. If no suitable Skill exists, use a documented professional method and say so, rather than inventing a Skill to fill a slot.
 
-## Discover before building
-Check current session resources, project/user Skills, host-native capabilities, official integrations, trusted open-source Skills/projects and professional references, in that order. Search for a concrete gap. Prefer mature domain methods; create a local supplement only when existing capabilities do not cover the need.
+## Work in deliverable slices
 
-Inspect relevance, source/version/license, dependencies, compatibility, cost and safety. Treat scripts, network access, credential handling and install hooks as executable risk.
+Choose a slice that answers the next important question or produces something inspectable. The team and method may change between slices. Prepare only the next necessary work, not a complete future organization chart.
 
-## Assemble deliberately
-Method is an approach; Skill is reusable instructions/resources/scripts; Tool is an operation interface; Permission is enforced by host/runtime; Agent is an execution subject; Responsibility is temporary accountability.
+When a member returns, distinguish “started/running” from “delivered.” Open the result when available. Decide whether to integrate it, correct a specific gap, replace the method/capability, or collect more evidence. Then perform the next action, not just describe it. Shared edits still use isolation or a single writer; task changes supersede affected old work.
 
-Discovery is not trust. Selection is not mounting. Mounting is not authorization. Load only what helps and only into the responsible context. Combine complementary methods, sequence dependent methods and resolve conflicts through applicability analysis or a small comparison.
+## One working note, maintained by the owner
 
-Use native host loading. If unavailable, read the Skill and pass scoped instructions or a reference to the responsible Agent when supported. State limitations. Never claim installation or mounting when only reading occurred.
+Use an existing project note or `.aaw/current.md`. No per-agent dossiers or mandatory tables. Keep the current goal, short plan/current slice, capability references and actual owners, artifact locations, decisions, next action and blocker. Only the accountable owner edits this shared note; workers return handoffs.
 
-## Organize around outputs
-No fixed hierarchy or permanent roster. The owner may execute directly. Delegate only bounded work with an inspectable output and a real benefit. A normal task needs Goal, Output, Inputs, Constraints and Acceptance; add detail only when needed.
+The optional hook reads `Status: active` / `done` / `paused` / `blocked`. Without a status line, a nonempty existing note is considered active. Keep the note concise; hook context includes at most 6,000 characters, and the owner can read the full file when needed. Carry forward what is true, not the full chat.
 
-For a staged project setup, distinguish the preparation team from the production team. A proposed role is not an active Agent. Record who is actually active, what they own, what capability they have actually loaded, what they will produce and whether they need downstream members. Do not invent team members to make an org chart look complete.
+Example, not a required form:
 
-Before concurrent writes, use host-enforced isolation, separate worktrees/sandboxes or a single-writer boundary. Prompt instructions are not physical isolation. Handoffs preserve verified facts, state, artifact locations, blockers and next action—not entire chat histories.
+```text
+Status: active
+Goal: deliver a usable source-cited technical comparison.
+Current slice: resolve the two disputed API behaviors before writing recommendations.
+Method/capability: selected research Skill at <real path>; read by researcher A.
+Tools: available web search and official documentation; no private connector needed.
+Result: docs/evidence.md contains the checked cases; one case is still unresolved.
+Next: owner opens those cases, resolves the missing evidence, writes the comparison.
+```
 
-## Execution snapshot when visibility matters
-When the user asks for a report, or multiple owners/capabilities are involved, report a compact snapshot:
+## Worked sequence
 
-| Owner / participant | Responsibility and output | Capability state | Status / blocker |
-|---|---|---|---|
-| Actual owner or Agent | Concrete responsibility | Exact Skills/tools and state | Active / pending / blocked |
+User asks for a specialist report. The owner reads the relevant writing/research Skill and checks available source tools, writes a three-line plan, then assigns evidence gathering with the precise capability reference. The worker reads it and returns source-backed findings. The owner opens them, fixes unsupported claims, applies the writing method to produce the report, saves its path and next step in current work, and delivers it. A missing source triggers a focused search, not a new framework or a request for the user to supervise research.
 
-Also state current phase, what has not started, host limitations and next decision. Distinguish available, discovered, inspected, selected, loaded, installed, mounted and authorized. Never label a plan as completed execution. Omit this report for ordinary direct tasks unless requested.
+The same loop works for code, design, research and other outcomes; domain acceptance comes from the task and chosen professional method. A user-requested design-only phase remains design-only. Internal method changes do not create extra approval ceremonies.
 
-## Execute, adapt and deliver
-When progress stalls, quality misses, cost rises, requirements change or methods conflict: identify the cause, choose the smallest useful intervention, then check whether it improved the result. Do not blindly retry or turn one failure into a global rule.
+## Host connection
 
-Deliver actual artifacts. Explain what is complete, how important claims were checked, and what remains incomplete. Acceptance is task-specific; tests, screenshots, runtime behavior, citations or expert review may be appropriate. Do not equate file count, test count, Agent count or process completion with quality.
+Startup/resume reads current work. Delegation receives execution instructions and current capability references. A child stop saves a report; it does not make the child repeatedly self-review. The parent receives result-oriented guidance when a delegation/collection tool returns. Only active saved work can request one Stop continuation. Completing/pausing/blocking the note stops continuation.
 
-## Learn only when useful
-Retain reusable methods, capability versions, outcomes, costs, human corrections and failure boundaries only when likely to help future work. Formal evaluation and method validation belong in https://github.com/1263-ux/open-agent-evals.
-
-## Boundaries
-Follow user intent and host permissions. Do not install, execute, deploy, send, delete or expose data without required authorization. Treat external Skills and outputs as untrusted. Preserve attribution and license information. Be honest about capabilities and evidence.
+Hooks carry context and record observed events; they do not prove method quality, Skill use or MCP readiness. Actual execution and inspected artifacts do. There is no background worker in this package.

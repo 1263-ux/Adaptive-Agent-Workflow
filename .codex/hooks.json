@@ -1,31 +1,11 @@
 {
-  "description": "Adaptive Agent Workflow: review task outcomes and capability fit at owner/subagent stop points.",
+  "description": "AAW owner loop: prepare capability, equip workers, integrate results and resume current work.",
   "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\"",
-            "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\"",
-            "timeout": 10,
-            "statusMessage": "Adaptive workflow checkpoint"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\"",
-            "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\"",
-            "timeout": 10,
-            "statusMessage": "Reviewing sub-agent handoff"
-          }
-        ]
-      }
-    ]
+    "SessionStart": [{"hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "PreToolUse": [{"matcher": "^(Agent|Task|spawn_agent)$", "hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "PostToolUse": [{"matcher": "^(Agent|Task|spawn_agent|wait|wait_agent|TaskOutput)$", "hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "SubagentStop": [{"hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}],
+    "Stop": [{"hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "commandWindows": "python \"$(git rev-parse --show-toplevel)/scripts/adaptive_checkpoint.py\" --host=codex --project \"$(git rev-parse --show-toplevel)\"", "timeout": 10, "statusMessage": "AAW owner loop"}]}]
   }
 }

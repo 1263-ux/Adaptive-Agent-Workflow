@@ -1,97 +1,14 @@
-# Runtime Smoke Test
+# Real-host owner-loop check
 
-Use these scenarios after installing the project Skill in a supported host. Record host/version and whether behavior was native, manual fallback or unsupported.
+Use the installed project package in the actual host. Record host/version and inspect real artifacts rather than marking a prompt checklist complete.
 
-## 1. Direct task stays direct
-Prompt: "Fix this small, local typo/bug in the current project."
-Expected:
-- Agent understands the requested outcome.
-- No unnecessary research, team creation or long planning artifact.
-- It makes the change and performs proportionate verification.
-- It reports the result and any limitation.
+1. Give one bounded specialist task. The owner reads project context, chooses a suitable available Skill/method and tools, makes a short plan and starts work in that turn.
+2. Delegate one independent output. Inspect the actual child prompt: it should carry the output, selected capability reference and scoped execution instructions.
+3. Let the child finish. Its result should be saved under `.aaw/runtime/handoffs/`. The child should not be restarted just to self-review.
+4. Collect the result in the parent. The owner should open the artifact, integrate or correct it, update current work and perform the next useful action. A returned agent ID or running status is not a delivered artifact.
+5. Resume a new session. It should receive the existing current-work note and inspect the saved artifacts instead of asking the user to reconstruct progress.
+6. Mark the task done, paused or blocked in the working note. Stop should not request another continuation. A simple direct task without a note should not be forced through this loop.
 
-## 2. Explicit capability exploration
-Prompt: "Before choosing an approach, explore mature Skills or specialist methods for this unfamiliar task and recommend what to use."
-Expected:
-- Agent identifies a concrete capability gap.
-- Searches available sources using host-supported tools.
-- Inspects candidate source, method, dependencies, license and safety.
-- Explains the selection briefly.
-- Does not claim installation/mounting unless it happened.
+Also check an explicit design-only request, a missing MCP tool and a requirement change. The owner should adapt within the user's scope, not claim missing capabilities or ask for approval at every internal step.
 
-## 3. Dynamic organization
-Prompt: "Implement these two independent deliverables in parallel, then integrate them."
-Expected:
-- Agent confirms independent outputs and integration boundaries.
-- Uses host-supported delegation only when available.
-- Establishes workspace/write isolation or a single-writer plan.
-- Integrates and verifies actual artifacts.
-- Does not create a fixed role hierarchy.
-
-## 4. Method failure adaptation
-Prompt: "The current approach is not meeting the quality target. Diagnose the cause and change the smallest thing likely to improve the outcome."
-Expected:
-- Agent identifies the failure category before retrying.
-- Considers missing capability, wrong method, execution issue, unclear goal, environment and organization.
-- Changes method/team/scope/context only as justified.
-- Checks whether the change improved the result.
-
-## 5. Handoff and continuation
-Prompt: "Hand this task to another agent/member and have them continue."
-Expected:
-- Handoff includes goal, current state, verified findings, artifact paths, blockers and next action.
-- Receiving member can inspect source artifacts.
-- No claim of isolated permissions unless host enforces them.
-
-## 6. Outcome-based delivery
-Prompt: "Deliver the requested result and tell me what is actually complete."
-Expected:
-- Acceptance is based on the user goal and task-specific criteria.
-- Evidence is proportionate to important claims.
-- Incomplete items and limitations are disclosed.
-- Test count, agent count and process completion are not used as success proxies.
-
-## Pass criteria
-
-The Skill is useful if:
-- Simple tasks do not gain noticeable process overhead.
-- Capability discovery happens when it materially helps.
-- Team creation is justified by independent outputs or other clear benefits.
-- The Agent adapts after failure rather than blindly repeating.
-- Delivery quality and clarity improve without misleading capability claims.
-
-A checklist pass is not proof of production effectiveness. Compare actual task outcomes, time, cost and human corrections against a baseline.
-
-
-## 7. Preparation phase must not become implementation
-Prompt: "First establish the project capability, team, workflow and acceptance system. Do not start product implementation yet."
-Expected:
-- Agent stays in the preparation/design phase.
-- It discovers and reports relevant capabilities and their actual states.
-- It distinguishes active participants from proposed responsibilities.
-- It does not modify product code or start production tasks.
-- It identifies the explicit transition point to implementation.
-
-## 8. Execution transparency on request
-Prompt: "Show me exactly which Skills each active owner has loaded, what each member is doing, and what remains pending."
-Expected:
-- Report actual participants, responsibilities and inspectable outputs.
-- Distinguish available, discovered, inspected, selected, loaded, installed, mounted and authorized.
-- State host limitations and unverified capabilities.
-- Never report planned work as completed or references as mounted Skills.
-
-
-## 9. Adaptive checkpoint hook behavior
-Run a short multi-step task that creates one bounded sub-agent task, then let the main owner finish a turn.
-Expected:
-- Codex/Claude hook fires at main Stop and sub-agent SubagentStop.
-- The responsible Agent receives one concise checkpoint instruction.
-- It inspects actual output and decides whether a capability gap exists.
-- It searches/loads a Skill only when the task justifies it.
-- It reports exact capability state and hands results to the owner.
-- The continuation guard prevents the same stop from recursively triggering another checkpoint.
-- No Skill is installed or mounted automatically by the hook itself.
-
-Verify host activation:
-- Codex: open `/hooks`, review/trust the project hook definitions, then inspect the event behavior.
-- Claude Code: trust the project settings/hooks when prompted; use hook debug output if the event does not fire.
+Local protocol/installer checks are in [owner-loop-verification.md](owner-loop-verification.md). This document is a live-host procedure, not a claim that those host runs have already happened.

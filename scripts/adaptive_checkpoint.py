@@ -46,11 +46,7 @@ def main() -> int:
         )
 
     message = f"{CHECKPOINT}\nCurrent event: {name}. Current participant: {role}. {target}"
-    is_claude = (
-        str(event.get("source") or "").lower() == "claude-code"
-        or event.get("_host") == "claude-code"
-        or bool(os.environ.get("CLAUDE_PROJECT_DIR"))
-    )
+    is_claude = "--host=claude-code" in sys.argv or event.get("_host") == "claude-code"
 
     if is_claude:
         output = {

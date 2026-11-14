@@ -6,22 +6,39 @@
 
 ## Status
 
-**v0.2.0 — usable Skill package; no custom Agent Runtime.**
-
-The repository now includes executable Agent Skills for Codex and Claude Code, plus a portable canonical Skill. It is intended to guide real task execution through host-native mechanisms. It does not implement its own scheduler, permission system, task database or Skill marketplace.
+**v0.2.1 — canonical Skill package with generated host mirrors; no custom Agent Runtime.**
 
 ## Start here
 
 1. [Quickstart](docs/quickstart.md)
-2. [Portable Skill](skills/adaptive-agent-workflow/SKILL.md)
-3. [Codex project Skill](.agents/skills/adaptive-agent-workflow/SKILL.md)
-4. [Claude Code project Skill](.claude/skills/adaptive-agent-workflow/SKILL.md)
-5. [Design overview](DESIGN-v0.1.md)
-6. [Runtime playbook](core/runtime-playbook.md)
-7. [Capability discovery and mounting](references/capability-discovery.md)
-8. [Dynamic organization](references/organization.md)
-9. [Host adapter notes](references/host-adapters.md)
-10. [Runtime smoke tests](docs/smoke-test.md)
+2. [Canonical Skill package](skills/adaptive-agent-workflow/)
+3. [Runtime playbook](skills/adaptive-agent-workflow/references/runtime-playbook.md)
+4. [Capability discovery and mounting](skills/adaptive-agent-workflow/references/capability-discovery.md)
+5. [Dynamic organization](skills/adaptive-agent-workflow/references/organization.md)
+6. [Host adapter notes](skills/adaptive-agent-workflow/references/host-adapters.md)
+7. [Design overview](DESIGN-v0.1.md)
+8. [Runtime smoke tests](docs/smoke-test.md)
+
+## Canonical source and host packages
+
+The only manually maintained Skill source is `skills/adaptive-agent-workflow/`.
+
+- Codex mirror: `.agents/skills/adaptive-agent-workflow/`
+- Claude Code mirror: `.claude/skills/adaptive-agent-workflow/`
+
+Regenerate both mirrors after changing the canonical package:
+
+```bash
+python scripts/sync_skills.py
+```
+
+Check for drift without modifying files:
+
+```bash
+python scripts/sync_skills.py --check
+```
+
+GitHub Actions checks mirror consistency on relevant pushes and pull requests. Do not edit generated host copies directly.
 
 ## Core principles
 
@@ -40,14 +57,6 @@ The repository now includes executable Agent Skills for Codex and Claude Code, p
 Understand → Explore (when useful) → Organize (when useful) → Execute → Deliver → Observe & Adapt.
 
 These are decision capabilities, not mandatory sequential phases. Simple tasks may go directly to execution. Complex or unfamiliar tasks can explore, form teams and revisit earlier decisions.
-
-## Host support
-
-- **Codex:** project Skill under `.agents/skills/`.
-- **Claude Code:** project Skill under `.claude/skills/`.
-- **Other hosts:** use the portable Skill and the host's documented installation/invocation mechanism.
-
-See [host adapter notes](references/host-adapters.md). Host capabilities must be verified against the actual host/version. The framework does not create permissions or guarantee dynamic per-agent mounting.
 
 ## Related evaluation assets
 

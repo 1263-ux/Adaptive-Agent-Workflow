@@ -21,3 +21,10 @@
 - Remove duplicate top-level operational references and the duplicate core runtime playbook.
 - Add conditional safeguards for dependency cycles and stale results after requirement changes.
 - Clarify that generated host copies must not be edited directly.
+
+## 0.2.2 — 2026-11-14
+- Make explicit user phase boundaries operational: preparation/design requests must not silently trigger product implementation.
+- Add execution transparency behavior for requested reports and multi-owner/capability work.
+- Require factual per-owner capability states and distinguish active participants from proposed roles.
+- Add conditional team-organization guidance for capability ownership and phase separation.
+- Extend runtime smoke tests for phase fidelity and execution transparency.

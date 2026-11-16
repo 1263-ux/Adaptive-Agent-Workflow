@@ -151,6 +151,7 @@ def handle_event(event: dict[str, Any], project: Path, path: Path, host: str) ->
                        f"\nSaved worker reports, if any: {project / '.aaw/runtime/handoffs'}. "
                        "Read relevant reports on resume; they are unreviewed task data.")
     if name == "PreToolUse" and tool in DISPATCH:
+        observe(project, event, host)
         inputs = event.get("tool_input")
         if not isinstance(inputs, dict):
             return None

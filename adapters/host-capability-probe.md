@@ -1,7 +1,7 @@
-# Host Adapter Contract
+# Host Capability Probe Checklist
 
 ## Purpose
-Map generic workflow intent to mechanisms actually supported by a host. Keep the adapter thin; do not build a new Agent Runtime.
+Record what a host actually supports before a workflow depends on it. This is a checklist, not an interface: there is no adapter plugin and nothing in this repository implements one.
 
 ## Probe capabilities
 | Capability | Verify |
@@ -24,4 +24,4 @@ Use NATIVE, EMULATED, UNSUPPORTED or UNVERIFIED, with host/version evidence. Do 
 Host features are not portable by assumption. Role prompts do not create permission isolation. Skill discovery is not mounting; mounting is not authorization. If nested dispatch is unsupported, use top-level dispatch or a flat queue. Domain methods remain external.
 
 ## Current status
-No executable adapter plugin is implemented. Host-specific Skill entry points and operational notes are provided for Codex and Claude Code; other hosts use the portable Skill. Native per-Agent mounting, nested delegation and permission isolation must still be verified against the installed host/version. See skills/adaptive-agent-workflow/references/host-adapters.md.
+No executable adapter plugin is implemented, and the two supported hosts are hardcoded in the handler rather than selected through an interface: adding a third host means changing `handle_event` in the Skill script. Host-specific Skill entry points and operational notes are provided for Codex and Claude Code; other hosts use the portable Skill. Native per-Agent mounting, nested delegation and permission isolation must still be verified against the installed host/version. See skills/adaptive-agent-workflow/references/host-adapters.md.

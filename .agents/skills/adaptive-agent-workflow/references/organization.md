@@ -9,6 +9,8 @@ A project may need separate preparation and production phases. If the user asks 
 ## Delegate only for a reason
 Delegate when an independent inspectable output exists and there is a real benefit: distinct expertise, parallel time savings, context isolation or independent evaluation. Do not delegate merely because a task is large or has many steps.
 
+Judge net benefit, not size. Delegation is a poor trade when the whole change stays inside the owner context, when several short edits would sit behind a coordination round-trip, or when each child would need the same reading pass the owner already did. Splitting three related files across three children is the canonical failure: three partial views, one integration cost, no parallel gain. Keep the work and do it.
+
 ## Make capability ownership explicit when relevant
 For multi-owner or specialist work, each active participant should have:
 - Responsibility and concrete output.
@@ -24,6 +26,22 @@ For ordinary work, pass only Goal, Output, Inputs, Constraints and Acceptance. A
 
 ## Topologies
 Direct, Sequential, Research-first, Probe-first, Parallel and Hybrid are all valid. Choose and change topology as the task evolves.
+
+| Situation | Default | Why |
+|---|---|---|
+| Goal clear, a handful of files, low risk | Direct | Coordination cost exceeds any parallel gain |
+| Unknowns decide the design | Research-first or Probe-first | One inspected answer replaces several guesses |
+| Independent modules sharing a boundary | Parallel with a frozen interface | Parallelism pays only when the contract holds still |
+| Shared context, one artifact built in steps | Sequential | Handoffs would re-read the same context |
+| High impact, expensive to reverse | Builder plus independent verifier | The producer own claim is the weakest evidence |
+
+Selection is provisional: move to a stronger topology when evidence shows the current one failing, and back to Direct when it is not needed.
+
+## Freeze the shared interface before parallel writes
+Before dispatching parallel work that touches a shared boundary, the owner defines the part others depend on - type definitions, API signatures, schema, file layout, naming - and passes it in every brief. Children fill their own scope but do not redefine the boundary. When the boundary must change, the owner changes it once, tells every active child and reconciles the results. A contract that lives only in the owner head is not a contract.
+
+## Reuse a warm collaborator
+A collaborator holds context the owner does not. When follow-up work belongs to the same module - a failing test, a review correction, an extension of the same artifact - return it to the collaborator that produced it. Start a new one when the responsibility actually changes: a different module, an independent verifier, or isolation from a context that has gone wrong. If the host cannot resume a collaborator, carry its paths, decisions and constraints into the new brief and say that a fresh context is in use.
 
 ## Handoff
 Preserve goal/current state, verified findings, decisions, completed artifact locations, blockers/risks, and next action/acceptance. Do not copy entire chat histories unless needed.

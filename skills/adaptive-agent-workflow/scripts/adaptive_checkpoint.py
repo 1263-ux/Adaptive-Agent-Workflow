@@ -82,12 +82,24 @@ def progress_path(project: Path, override: str | None) -> Path:
     return path if path.is_absolute() else project / path
 
 
+NOTE_LIMIT = 6000
+
+
 def read_progress(path: Path) -> str:
     if not path.is_file():
         return ""
     # A working note is a compact pointer, not a second transcript.
     with path.open(encoding="utf-8") as handle:
-        return handle.read(6000)
+        note = handle.read(NOTE_LIMIT + 1)
+    if len(note) <= NOTE_LIMIT:
+        return note
+    return note[:NOTE_LIMIT] + (
+        "\n[truncated: the note continues beyond 6000 characters; open the file to read the rest]")
+
+
+def session_of(note: str) -> str:
+    match = re.search(r"^Session:\s*(\S+)\s*$", note, re.MULTILINE | re.IGNORECASE)
+    return match.group(1) if match else ""
 
 
 def status(note: str) -> str:
@@ -156,7 +168,13 @@ def handle_event(event: dict[str, Any], project: Path, path: Path, host: str) ->
         observe(project, event, host)
         return context(name, OWNER_RETURN + snapshot(project, path))
     if name == "Stop":
-        if event.get("stop_hook_active") is True or status(read_progress(path)) != "active":
+        note = read_progress(path)
+        if event.get("stop_hook_active") is True or status(note) != "active":
+            return None
+        claimed = session_of(note)
+        current = str(event.get("session_id", ""))
+        if claimed and current and claimed != current:
+            # The note belongs to another session; both continuing would duplicate the work.
             return None
         observe(project, event, host)
         message = OWNER_CONTINUE + snapshot(project, path)
@@ -164,7 +182,49 @@ def handle_event(event: dict[str, Any], project: Path, path: Path, host: str) ->
     return None
 
 
+def observations(project: Path) -> list[Path]:
+    base = project / ".aaw/runtime"
+    if not base.is_dir():
+        return []
+    return sorted((path for path in base.rglob("*.json") if path.is_file()),
+                  key=lambda path: path.stat().st_mtime, reverse=True)
+
+
+def report(project: Path) -> None:
+    items = observations(project)
+    total = sum(path.stat().st_size for path in items)
+    print(f"AAW observations under {project / '.aaw/runtime'}")
+    print(f"{len(items)} records, {total} bytes")
+    if total > 5_000_000:
+        print("Consider --prune: these observations are only inputs for the owner, not an archive.")
+    for path in items[:10]:
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            print(f"  {path.name}: unreadable")
+            continue
+        print(f"  {record.get('observed_at', '?')} {record.get('event', '?')} "
+              f"{record.get('meaning', '')} {record.get('tool_name') or ''}".rstrip())
+
+
+def prune(project: Path, keep: int) -> None:
+    items = observations(project)
+    removed = 0
+    for path in items[keep:]:
+        try:
+            path.unlink()
+            removed += 1
+        except OSError:
+            continue
+    print(f"Removed {removed} of {len(items)} observation records, kept {min(keep, len(items))}.")
+
+
 def main() -> int:
+    # A cp936 console turns non-ASCII note text into bytes the host cannot read back.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, OSError):
+        pass
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", choices=("codex", "claude-code"), default="codex")
     parser.add_argument("--project")
@@ -172,9 +232,13 @@ def main() -> int:
     parser.add_argument("--init", metavar="GOAL", help="create a current-work note without overwriting")
     parser.add_argument("--next", dest="next_action", default="Choose and execute the first useful slice.")
     parser.add_argument("--show", action="store_true")
+    parser.add_argument("--session", help="record the owning session in a new note")
+    parser.add_argument("--report", action="store_true", help="summarize saved observations")
+    parser.add_argument("--prune", type=int, metavar="KEEP",
+                        help="keep only the newest KEEP observation records")
     args = parser.parse_args()
     try:
-        if args.init or args.show:
+        if args.init or args.show or args.report or args.prune is not None:
             event: dict[str, Any] = {}
         else:
             raw = sys.stdin.read()
@@ -190,17 +254,24 @@ def main() -> int:
                              f"Next: {args.next_action}\n\n"
                              "Record the short plan, active owners, capability references and actual "
                              "results here as work progresses. Keep it useful, not exhaustive.\n")
+            if args.session:
+                with path.open("a", encoding="utf-8") as handle:
+                    handle.write(f"\nSession: {args.session}\n")
             print(path)
+        elif args.report:
+            report(project)
+        elif args.prune is not None:
+            prune(project, max(args.prune, 0))
         elif args.show:
             print(snapshot(project, path))
         else:
             output = handle_event(event, project, path, args.host)
             if output is not None:
-                print(json.dumps(output, ensure_ascii=False))
+                print(json.dumps(output, ensure_ascii=True))
         return 0
     except (OSError, ValueError) as exc:
         print(f"AAW: {exc}", file=sys.stderr)
-        return 1 if args.init or args.show else 0
+        return 0 if not (args.init or args.show or args.report or args.prune is not None) else 1
 
 
 if __name__ == "__main__":

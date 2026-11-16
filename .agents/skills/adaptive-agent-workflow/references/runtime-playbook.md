@@ -6,6 +6,8 @@ The user gives the outcome. The owner supplies the short plan, suitable methods,
 
 For simple work, do it directly. For specialist work, inspect the relevant available Skills/tool inventory before producing the specialist result. Familiar, working capabilities are reused; external discovery is for an actual gap, not a ritual. Exploration and executable probes are valid work, not something blocked until a full plan is written.
 
+Acting stays the default and the gate is narrow. Show the short plan before acting only when the work is irreversible, visible outside this machine, outside the authorized project, or a broad rewrite. Everything else proceeds, and asking the user to approve ordinary steps stays the anti-pattern.
+
 ## From capability to actual work
 
 A capability assignment is concrete: “use `<path or pinned source>`, apply `<method relevant to this output>`, use `<available tools>`, produce `<artifact>`.” The executor reads the selected instructions in its own context and uses the method. If a needed MCP tool is unavailable, fix/replace that dependency within authorization or state the blocker. Do not merely rename an ordinary worker as a specialist.
@@ -22,7 +24,7 @@ When a member returns, distinguish “started/running” from “delivered.” O
 
 Use an existing project note or `.aaw/current.md`. No per-agent dossiers or mandatory tables. Keep the current goal, short plan/current slice, capability references and actual owners, artifact locations, decisions, next action and blocker. Only the accountable owner edits this shared note; workers return handoffs.
 
-The optional hook reads `Status: active` / `done` / `paused` / `blocked`. Without a status line, a nonempty existing note is considered active. Keep the note concise; hook context includes at most 6,000 characters, and the owner can read the full file when needed. Carry forward what is true, not the full chat.
+The optional hook reads `Status: active` / `done` / `paused` / `blocked`. Without a status line, a nonempty existing note is considered active. A `Session: <id>` line scopes the note to one session, so a second terminal in the same project cannot claim the same continuation; leave it out when the project is worked from a single session. Keep the note concise; hook context reads at most 6,000 characters and cuts the remainder with an explicit truncation marker, while the owner can read the full file when needed. Carry forward what is true, not the full chat.
 
 Example, not a required form:
 
@@ -41,6 +43,9 @@ Next: owner opens those cases, resolves the missing evidence, writes the compari
 User asks for a specialist report. The owner reads the relevant writing/research Skill and checks available source tools, writes a three-line plan, then assigns evidence gathering with the precise capability reference. The worker reads it and returns source-backed findings. The owner opens them, fixes unsupported claims, applies the writing method to produce the report, saves its path and next step in current work, and delivers it. A missing source triggers a focused search, not a new framework or a request for the user to supervise research.
 
 The same loop works for code, design, research and other outcomes; domain acceptance comes from the task and chosen professional method. A user-requested design-only phase remains design-only. Internal method changes do not create extra approval ceremonies.
+
+## Delivery carries its evidence
+An acceptance scorecard accompanies the delivery: one row per acceptance item, PASS/WARN/FAIL, the command that actually ran with its exit code, and what was not run. Tests support particular claims and their count is not the outcome. The form is in `references/acceptance-scorecard.md`.
 
 ## Host connection
 

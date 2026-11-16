@@ -22,6 +22,8 @@ def package_files(base: Path) -> set[Path]:
         path.relative_to(base)
         for path in base.rglob("*")
         if path.is_file()
+        and "__pycache__" not in path.parts
+        and path.suffix != ".pyc"
     }
 
 

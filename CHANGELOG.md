@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.6.2 — 2026-11-16
+- Record the Codex trust gate in `docs/host-verification.md`: an unapproved handler never runs, `codex exec` cannot approve it, and the terminal still prints `hook: <Event>` because another handler for that event fired.
+- Upgrade the matrix with the first host-run evidence: `UserPromptSubmit` is NATIVE (real session ids in two records), while `SessionStart` stays UNVERIFIED with the reason stated.
+- Warn on install that Codex approves hooks per handler slot, so interactive Codex must be opened once after handlers are added.
+
+## 0.6.1 — 2026-11-16
+- Add `--codex-global`: write `hooks.json` and the Skill package into `CODEX_HOME`, because Codex ignores a project-level `.codex/hooks.json`. The command omits `--project` so one global hook serves every project, the previous file is backed up, foreign hooks and unrelated keys survive, and `--uninstall --codex-global` restores it.
+- Warn when `[features] hooks = true` is missing from `CODEX_HOME/config.toml`; without it Codex silently runs no handlers.
+- Fix `sync_skills.py --check` failing right after the test suite wrote bytecode: the mirror inventory now ignores `__pycache__`/`*.pyc`, so check order no longer matters.
+- Fix the installer printing unreadable paths on a cp936 console (stdout reconfigured to UTF-8, matching the handler).
+- Fix `SKILL.md` pointing at `scripts/adaptive_checkpoint.py` in the project root, a path that exists only in this repository; it now names the installed package path, with a test that every script path named in `SKILL.md` exists in the package.
+- Replace the stale example in `acceptance-scorecard.md` (it claimed 11 tests and an unrun Windows check) and scope its claim to the handler instead of the host.
+
+## 0.6.0 — 2026-11-15
+- Delete `core/`, `templates/`, `interfaces/`, `migration/` and `hooks/`: 13 files that nothing linked to. The task and capability templates contradicted the sizing rules they duplicated, so a model reading them would follow the wrong one.
+- Preserve the one rule `core/` uniquely carried in `SKILL.md`: ask only when the answer would change the plan or the result.
+- Link `research/` from the README instead of leaving the decision log and reference reading unreachable.
+- Add `docs/host-verification.md`: host documentation versus what this package has observed, including that Codex hooks are opt-in behind `features.codex_hooks=true` and that `commandWindows`/`statusMessage` are undocumented keys.
+- Add `--dry-run` and `--uninstall` to the installer, so installing into a real project can be inspected and reversed.
+- Record first host evidence in `docs/host-verification.md`: Codex fires hooks only from `$CODEX_HOME/hooks.json` and ignored a project-level `.codex/hooks.json` on 0.162.1, while this package's Windows hook command was proven to return a correct payload.
+
+## 0.5.0 — 2026-11-15
+- Declare one normative source in the README; `core/`, `DESIGN-v0.1.md` and `research/` are marked historical drafts and are not installed.
+- Rename the adapter "contract" to a host capability probe checklist and state that no adapter interface exists.
+- Scope a working note to one session with an optional `Session:` line, so two sessions cannot claim the same Stop continuation.
+- Surface note truncation with an explicit marker instead of dropping text past 6,000 characters silently.
+- Give stored observations a reader: `--report` summarizes them and `--prune N` caps the directory, instead of growing unread records.
+- Make hook output portable: stdout is reconfigured to UTF-8 and hook payloads are pure-ASCII JSON, so a cp936 console no longer corrupts them.
+- Assert the constants the handler actually uses instead of duplicated prompt sentences, and cover session scoping, truncation, pruning and malformed input.
+- Fix the suite on non-UTF-8 consoles: every subprocess call and file read now names its encoding.
+
+## 0.4.0 — 2026-11-15
+- Add a narrow risk gate: a short plan brief is required only for irreversible, externally visible, out-of-project or broad-rewrite work; inside those lines the owner still acts.
+- Add topology selection criteria instead of a fixed topology, and require freezing the shared interface before parallel writes.
+- Require reusing a warm collaborator for follow-up work on the module it already holds, with a fresh-context fallback when the host cannot resume.
+- Make capability discovery one consolidated owner inventory plus a budget per further level, so children do not re-walk the ladder.
+- Require an evidence-based acceptance scorecard for delivery; unchecked items are WARN, never PASS.
+- Add `references/acceptance-scorecard.md` to the canonical Skill package.
+- Reject fixed numeric dispatch budgets: call counts and line counts cannot be judged before the work exists, and they forbid legitimate single-owner isolation. Qualitative size hints stay in the topology table.
+
 ## 0.3.1 — 2026-11-15
 - Replace the generic Stop-only reminder with owner entry/resume, capability-aware delegation and parent-side result integration.
 - Append execution instructions and current capability references to actual child prompts without changing permissions.

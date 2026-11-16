@@ -6,7 +6,7 @@
 
 ## Status
 
-**v0.3.1 — owner execution loop, capability-aware delegation and resumable progress.**
+**v0.6.0 — fewer files that speak in one voice, a reversible installer, and host behaviour separated from host documentation.**
 
 The owner chooses and applies the method, produces a useful slice, inspects returned work and performs the next action. Hooks connect these actions to real session/delegation events; they do not replace the owner's judgment with a permission checklist.
 
@@ -16,7 +16,7 @@ The owner chooses and applies the method, produces a useful slice, inspects retu
 python scripts/install_workflow.py --project /path/to/project --host both
 ```
 
-Run from this repository after pulling the latest main. The installer copies the complete Skill and merges AAW hooks without replacing unrelated settings. Use `--host codex` or `--host claude-code` for one host; use `--progress-file docs/project/current.md` to reuse existing progress. Review/trust changed hooks in the host. See [Quickstart](docs/quickstart.md).
+Run from this repository after pulling the latest main. The installer copies the complete Skill and merges AAW hooks without replacing unrelated settings. Use `--host codex` or `--host claude-code` for one host; use `--progress-file docs/project/current.md` to reuse existing progress. Codex loads hooks only from its own home, so pass `--codex-global` for Codex: it writes `hooks.json` and the Skill package under `CODEX_HOME` (default `~/.codex`), keeps a backup, and leaves every foreign hook in place. Without it the Codex half installs into a file the host does not read. `--dry-run` prints the planned changes and writes nothing. `--uninstall` removes AAW handlers, the two AAW `.gitignore` lines and the installed package while leaving other hooks, permissions, generic ignore entries and your progress notes in place. Review/trust changed hooks in the host. See [Quickstart](docs/quickstart.md).
 
 ## Start here
 
@@ -28,8 +28,19 @@ Run from this repository after pulling the latest main. The installer copies the
 6. [Host adapter notes](skills/adaptive-agent-workflow/references/host-adapters.md)
 7. [Owner-loop hooks](docs/adaptive-checkpoint.md)
 8. [Design overview](DESIGN-v0.1.md)
-9. [Real-host procedure](docs/smoke-test.md)
+9. [Real-host procedure](docs/smoke-test.md), [host verification status](docs/host-verification.md) and [Codex verification steps](docs/codex-verification.md)
 10. [Executed local verification](docs/owner-loop-verification.md)
+
+## Normative sources
+
+`skills/adaptive-agent-workflow/` is the normative package: it is what the installer copies and the only thing an agent actually reads. The rest is supporting material with a different lifespan.
+
+- `DESIGN-v0.1.md` is the historical design draft, kept for the record. It is not installed and is not a source of behavior; where it disagrees with the Skill, the Skill wins.
+- `research/` holds the [decision log](research/decision-log.md), including the decisions still open, and the [reference reading](research/references.md). Neither is installed.
+- `adapters/` holds capability probe checklists, not an implemented adapter interface.
+- `docs/` explains installation, operations and what was actually verified.
+
+If a rule is not inside the Skill package, an installed project does not have it.
 
 ## Canonical source and host packages
 

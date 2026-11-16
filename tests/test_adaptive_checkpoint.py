@@ -273,6 +273,13 @@ class OwnerLoopTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("codex", result.stderr.lower())
 
+    def test_dispatch_matcher_tolerates_a_namespaced_tool_name(self):
+        pattern = re.compile(r"(?:^|\.)(?:Agent|Task|spawn_agent)$")
+        for name in ("Agent", "Task", "spawn_agent", "collaboration.spawn_agent", "mcp.Agent"):
+            self.assertTrue(pattern.search(name), name)
+        for name in ("Write", "spawn_agent_extra", "collaboration.read"):
+            self.assertFalse(pattern.search(name), name)
+
     def test_existing_project_note_can_be_selected(self):
         path = self.project / "docs/project/current.md"
         path.parent.mkdir(parents=True)

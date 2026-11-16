@@ -13,8 +13,10 @@ import sys
 
 SOURCE = Path(__file__).resolve().parents[1] / "skills/adaptive-agent-workflow"
 EVENTS = {"SessionStart": None, "UserPromptSubmit": None,
-          "PreToolUse": r"^(Agent|Task|spawn_agent)$",
-          "PostToolUse": r"^(Agent|Task|spawn_agent|wait|wait_agent|TaskOutput)$",
+          # Hosts may namespace tool names (collaboration.spawn_agent); an anchored
+          # alternation would silently never match them.
+          "PreToolUse": r"(?:^|\.)(?:Agent|Task|spawn_agent)$",
+          "PostToolUse": r"(?:^|\.)(?:Agent|Task|spawn_agent|wait|wait_agent|TaskOutput)$",
           "SubagentStop": None, "Stop": None}
 MARKER = "AAW owner loop"
 GITIGNORE_HEADER = "# AAW local observations"

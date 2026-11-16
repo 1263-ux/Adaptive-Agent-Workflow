@@ -111,3 +111,20 @@ AAW observations under C:\Users\chenfeng\AppData\Local\Temp\aaw-codex-verificati
   2026-11-16T15:09:27.923011+00:00 UserPromptSubmit host event observed; outcome not assessed
   2026-11-16T14:58:18.783734+00:00 SessionStart host event observed; outcome not assessed
 ```
+
+## Real Codex delegation: 2026-11-16
+
+On Windows with `codex-cli 0.162.1`, a `codex exec --skip-git-repo-check -c features.multi_agent=true` session (`01a1e4fc-5f3f-78b2-95d7-762e8bc65916`) invoked `collaboration.spawn_agent`; the child returned `PROBE_CHILD` and reported no extra instructions in its task prompt. The AAW report held SessionStart and UserPromptSubmit for that run but no PreToolUse record, and the terminal showed no PreToolUse hook line. A separate delegation in the desktop session likewise reported no injected text and produced no AAW PreToolUse record. The prompt rewrite therefore stays **UNVERIFIED** here: these observations do not isolate hook matching, hook invocation, or host support for `updatedInput`. The call was namespaced `collaboration.spawn_agent` while the configured matcher was `^(Agent|Task|spawn_agent)$`; the string the host matches on was not captured, so a mismatch was a hypothesis, not an established cause.
+
+### The matching fix, and the two variables it separates
+
+The shipped matcher was an anchored alternation, which cannot match a namespaced name. It is now `(?:^|\.)(?:Agent|Task|spawn_agent)$` for `PreToolUse`, and the matching form with the collection tools for `PostToolUse`, in the installer and in both checked-in host configs. This is a strict superset: every name that matched before still matches.
+
+The fix also replaces argument with observation. If a delegation now writes a `PreToolUse` record, its `tool_name` field holds the exact string the host matches on. If no record appears even with the widened matcher, the host is not emitting that event for this call at all and the matcher was never the problem.
+
+Two variables stay separate and should be reported separately:
+
+1. **Does the hook fire** for a namespaced dispatch tool? (matcher and event emission)
+2. **Does the host honour `hookSpecificOutput.updatedInput`?** Documented for Claude Code, unverified for Codex. A hook that fires proves only the first.
+
+Until a `PreToolUse` record exists and a child reports the injected brief, the prompt-rewrite mechanism remains UNVERIFIED on Codex however correct the matcher looks.

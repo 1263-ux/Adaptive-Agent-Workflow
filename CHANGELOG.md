@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.3 — 2026-11-16
+- Widen the dispatch matchers to tolerate a namespace prefix: `(?:^|\.)(?:Agent|Task|spawn_agent)$` and the matching collection form, in the installer and both checked-in host configs. Codex dispatches as `collaboration.spawn_agent`, which an anchored alternation can never match.
+- Record the first real Codex delegation in `docs/host-verification.md`: the child saw no injected brief and no `PreToolUse` record was written, keeping the prompt rewrite UNVERIFIED and separating hook matching from `updatedInput` support.
+
 ## 0.6.2 — 2026-11-16
 - Record the Codex trust gate in `docs/host-verification.md`: an unapproved handler never runs, `codex exec` cannot approve it, and the terminal still prints `hook: <Event>` because another handler for that event fired.
 - Upgrade the matrix with the first host-run evidence: `UserPromptSubmit` is NATIVE (real session ids in two records), while `SessionStart` stays UNVERIFIED with the reason stated.

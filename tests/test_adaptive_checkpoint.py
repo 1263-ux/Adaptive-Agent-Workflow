@@ -81,9 +81,14 @@ class OwnerLoopTests(unittest.TestCase):
                                     "tool_input": body["updatedInput"]}))
 
     def test_codex_message_field_is_supported(self):
-        out = self.call({"hook_event_name": "PreToolUse", "tool_name": "spawn_agent",
+        out = self.call({"hook_event_name": "PreToolUse", "session_id": "probe", "tool_name": "spawn_agent",
                          "tool_input": {"message": "Investigate", "agent_type": "explorer"}})
         self.assertIn(aaw.WORKER_BRIEF, out["hookSpecificOutput"]["updatedInput"]["message"])
+        records = list((self.project / ".aaw/runtime/events").glob("*.json"))
+        self.assertEqual(len(records), 1)
+        record = json.loads(records[0].read_text(encoding="utf-8"))
+        self.assertEqual((record["event"], record["session_id"], record["tool_name"]),
+                         ("PreToolUse", "probe", "spawn_agent"))
 
     def test_child_report_is_saved_without_restarting_child(self):
         self.assertIsNone(self.call({"hook_event_name": "SubagentStop", "session_id": "s1",
@@ -272,6 +277,22 @@ class OwnerLoopTests(unittest.TestCase):
                                 text=True, encoding="utf-8", capture_output=True)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("codex", result.stderr.lower())
+
+    def test_reinstall_removes_unmarked_windows_encoded_handler(self):
+        import base64
+        spec = importlib.util.spec_from_file_location("aaw_installer", INSTALLER)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        def encoded(text):
+            return "powershell -EncodedCommand " + base64.b64encode(text.encode("utf-16-le")).decode()
+        old = {"type": "command", "command": encoded("& 'C:/skills/adaptive-agent-workflow/scripts/adaptive_checkpoint.py'")}
+        foreign = {"type": "command", "command": encoded("& 'C:/other/script.py'")}
+        existing = {"hooks": {"PreToolUse": [{"matcher": "old", "hooks": [old, foreign]}]}}
+        merged = module.merge(existing, module.configuration("new-aaw"))
+        groups = merged["hooks"]["PreToolUse"]
+        self.assertEqual(groups[0]["hooks"], [foreign])
+        self.assertEqual(groups[1]["hooks"][0]["command"], "new-aaw")
+        self.assertEqual(module.strip(merged)["hooks"]["PreToolUse"][0]["hooks"], [foreign])
 
     def test_dispatch_matcher_tolerates_a_namespaced_tool_name(self):
         pattern = re.compile(r"(?:^|\.)(?:Agent|Task|spawn_agent)$")

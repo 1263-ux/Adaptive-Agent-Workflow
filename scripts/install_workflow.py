@@ -37,13 +37,25 @@ def configuration(command: str, arguments: list[str] | None = None) -> dict:
     return {"hooks": hooks}
 
 
+def is_aaw_handler(handle: dict) -> bool:
+    command = handle.get("command", "")
+    if handle.get("statusMessage") == MARKER or "adaptive_checkpoint.py" in command:
+        return True
+    if "-EncodedCommand " in command:
+        try:
+            encoded = command.split("-EncodedCommand ", 1)[1].split()[0]
+            command = base64.b64decode(encoded, validate=True).decode("utf-16-le")
+        except (ValueError, UnicodeError, IndexError):
+            return False
+        return "adaptive-agent-workflow" in command and "adaptive_checkpoint.py" in command
+    return False
+
+
 def keep_foreign(groups: list) -> list:
     """Keep every handler that is not ours, including unrelated hooks in shared groups."""
     kept = []
     for group in groups:
-        handlers = [handle for handle in group.get("hooks", [])
-                    if handle.get("statusMessage") != MARKER
-                    and "adaptive_checkpoint.py" not in handle.get("command", "")]
+        handlers = [handle for handle in group.get("hooks", []) if not is_aaw_handler(handle)]
         if handlers:
             kept.append({**group, "hooks": handlers})
     return kept

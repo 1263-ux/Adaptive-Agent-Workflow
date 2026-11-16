@@ -30,7 +30,7 @@ What a host **documents** is not what this package has **observed**. Keep the tw
 
 ## Turning UNVERIFIED into evidence
 
-- Run one bounded real task in the host, then read `adaptive_checkpoint.py --report`. If the six events are absent from `.aaw/runtime/events/`, the wiring is not firing - that is a host/config finding, not a model behaviour finding.
+- Run one bounded real task in the host, then read `adaptive_checkpoint.py --report`. An absent record does not by itself establish why a hook did not run: check the installed handler version, matching, trust, execution errors, and the host event separately.
 - Record host, version, platform and a short `--report` excerpt in the matrix above.
 - Keep one row per capability. A green row for delegation does not make mounting, isolation or method quality green.
 
@@ -120,7 +120,7 @@ On Windows with `codex-cli 0.162.1`, a `codex exec --skip-git-repo-check -c feat
 
 The shipped matcher was an anchored alternation, which cannot match a namespaced name. It is now `(?:^|\.)(?:Agent|Task|spawn_agent)$` for `PreToolUse`, and the matching form with the collection tools for `PostToolUse`, in the installer and in both checked-in host configs. This is a strict superset: every name that matched before still matches.
 
-The fix also replaces argument with observation. If a delegation now writes a `PreToolUse` record, its `tool_name` field holds the exact string the host matches on. If no record appears even with the widened matcher, the host is not emitting that event for this call at all and the matcher was never the problem.
+The fix also replaces argument with observation. If a delegation now writes a `PreToolUse` record, its `tool_name` field holds the exact string the host matches on. A missing record alone does not distinguish host event emission from trust, matching, handler errors or an older handler that did not record this event.
 
 Two variables stay separate and should be reported separately:
 
@@ -128,3 +128,7 @@ Two variables stay separate and should be reported separately:
 2. **Does the host honour `hookSpecificOutput.updatedInput`?** Documented for Claude Code, unverified for Codex. A hook that fires proves only the first.
 
 Until a `PreToolUse` record exists and a child reports the injected brief, the prompt-rewrite mechanism remains UNVERIFIED on Codex however correct the matcher looks.
+
+## Codex delegation follow-up
+
+On Windows with Codex 0.162.1 and the widened matcher, a real delegation displayed `hook: PreToolUse Failed`; `PostToolUse` recorded `spawn_agent`. The earlier handler did not record PreToolUse at all, so an absent record was not evidence of absent host emission. The handler now records matching PreToolUse events before producing its response. A record establishes invocation, not that Codex accepted `updatedInput` or that a child received the brief. The failure cause and prompt rewrite remain unverified.

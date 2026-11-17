@@ -162,8 +162,8 @@ def handle_event(event: dict[str, Any], project: Path, path: Path, host: str) ->
         output = {"hookEventName": name,
                   "updatedInput": {**inputs, key: inputs[key] + "\n\n" + WORKER_BRIEF + snapshot(project, path) + "\nThe assigned task is narrower than this project context; follow your task scope."}}
         if host == "codex":
-            # Codex accepts rewritten input only with allow; its hook runtime
-            # then continues normal tool execution and approval processing.
+            # Codex 0.162.1 requires allow with updatedInput. The permission
+            # effect on live approval paths is not yet independently verified.
             output["permissionDecision"] = "allow"
         return {"hookSpecificOutput": output}
     if name == "SubagentStop":

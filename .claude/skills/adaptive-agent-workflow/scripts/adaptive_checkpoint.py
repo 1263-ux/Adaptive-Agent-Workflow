@@ -158,7 +158,8 @@ def handle_event(event: dict[str, Any], project: Path, path: Path, host: str) ->
         key = "prompt" if isinstance(inputs.get("prompt"), str) else "message"
         if not isinstance(inputs.get(key), str) or "[AAW execution brief]" in inputs[key]:
             return None
-        # Append instructions to the actual child prompt without changing tool permissions.
+        # Append instructions to the child prompt. Codex additionally requires an explicit
+        # permission decision; see the host-verification note on its unverified effect.
         output = {"hookEventName": name,
                   "updatedInput": {**inputs, key: inputs[key] + "\n\n" + WORKER_BRIEF + snapshot(project, path) + "\nThe assigned task is narrower than this project context; follow your task scope."}}
         if host == "codex":

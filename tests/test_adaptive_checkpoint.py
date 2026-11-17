@@ -91,6 +91,17 @@ class OwnerLoopTests(unittest.TestCase):
         self.assertEqual((record["event"], record["session_id"], record["tool_name"]),
                          ("PreToolUse", "probe", "spawn_agent"))
 
+    def test_flattened_codex_dispatch_records_opaque_input_without_rewriting(self):
+        event = {"hook_event_name": "PreToolUse", "session_id": "host-probe",
+                 "tool_name": "collaborationspawn_agent",
+                 "tool_input": {"message": "gAAAAAopaque-token", "task_name": "child"}}
+        self.assertIsNone(self.call(event))
+        record = json.loads(next((self.project / ".aaw/runtime/events").glob("*.json")).read_text(encoding="utf-8"))
+        self.assertEqual(record["tool_name"], "collaborationspawn_agent")
+        event["tool_input"]["message"] = "plain task"
+        result = self.call(event)["hookSpecificOutput"]
+        self.assertIn(aaw.WORKER_BRIEF, result["updatedInput"]["message"])
+
     def test_child_report_is_saved_without_restarting_child(self):
         self.assertIsNone(self.call({"hook_event_name": "SubagentStop", "session_id": "s1",
                                     "agent_id": "r1", "last_assistant_message": "docs/findings.md"}))
@@ -296,11 +307,15 @@ class OwnerLoopTests(unittest.TestCase):
         self.assertEqual(module.strip(merged)["hooks"]["PreToolUse"][0]["hooks"], [foreign])
 
     def test_dispatch_matcher_tolerates_a_namespaced_tool_name(self):
-        pattern = re.compile(r"(?:^|\.)(?:Agent|Task|spawn_agent)$")
-        for name in ("Agent", "Task", "spawn_agent", "collaboration.spawn_agent", "mcp.Agent"):
+        spec = importlib.util.spec_from_file_location("aaw_installer_matchers", INSTALLER)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        pattern = re.compile(module.EVENTS["PreToolUse"])
+        for name in ("Agent", "Task", "spawn_agent", "collaboration.spawn_agent", "collaborationspawn_agent", "mcp.Agent"):
             self.assertTrue(pattern.search(name), name)
         for name in ("Write", "spawn_agent_extra", "collaboration.read"):
             self.assertFalse(pattern.search(name), name)
+        self.assertTrue(re.search(module.EVENTS["PostToolUse"], "collaborationwait_agent"))
 
     def test_existing_project_note_can_be_selected(self):
         path = self.project / "docs/project/current.md"

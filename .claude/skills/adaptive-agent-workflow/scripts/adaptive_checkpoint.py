@@ -145,6 +145,8 @@ def handle_event(event: dict[str, Any], project: Path, path: Path, host: str) ->
     name = str(event.get("hook_event_name") or event.get("hookEventName") or "")
     event = {**event, "hook_event_name": name}
     tool = str(event.get("tool_name", "")).rsplit(".", 1)[-1]
+    if tool.startswith("collaboration"):
+        tool = tool.removeprefix("collaboration")
     if name in {"SessionStart", "UserPromptSubmit"}:
         observe(project, event, host)
         return context(name, OWNER_START + snapshot(project, path) +
@@ -157,6 +159,10 @@ def handle_event(event: dict[str, Any], project: Path, path: Path, host: str) ->
             return None
         key = "prompt" if isinstance(inputs.get("prompt"), str) else "message"
         if not isinstance(inputs.get(key), str) or "[AAW execution brief]" in inputs[key]:
+            return None
+        # Codex may expose an opaque Fernet-like message; appending plaintext
+        # would corrupt the child call rather than augment its task.
+        if host == "codex" and inputs[key].startswith("gAAAAA"):
             return None
         # Append instructions to the child prompt. Codex additionally requires an explicit
         # permission decision; see the host-verification note on its unverified effect.

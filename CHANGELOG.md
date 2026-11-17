@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- Match Codex's observed flattened collaboration tool names as well as dotted names, and record the actual host name.
+- Leave opaque Codex child messages unchanged rather than appending plaintext to an encrypted-looking token; child prompt injection for those messages remains unavailable.
+
 ## 0.6.4 — 2026-11-17
 - Recognize unmarked PowerShell encoded AAW commands during reinstall and uninstall, preserving unrelated hooks.
 - Record matching `PreToolUse` invocations and correct the interpretation of missing event records.

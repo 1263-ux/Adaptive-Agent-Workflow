@@ -71,7 +71,7 @@ class OwnerLoopTests(unittest.TestCase):
     def test_actual_child_prompt_gets_brief_and_other_arguments_survive(self):
         self.note()
         original = {"prompt": "Gather API evidence", "subagent_type": "researcher", "model": "chosen"}
-        out = self.call({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_input": original})
+        out = self.call({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_input": original}, "claude-code")
         body = out["hookSpecificOutput"]
         self.assertEqual(body["updatedInput"]["model"], "chosen")
         self.assertIn("/skills/research/SKILL.md", body["updatedInput"]["prompt"])
@@ -84,6 +84,7 @@ class OwnerLoopTests(unittest.TestCase):
         out = self.call({"hook_event_name": "PreToolUse", "session_id": "probe", "tool_name": "spawn_agent",
                          "tool_input": {"message": "Investigate", "agent_type": "explorer"}})
         self.assertIn(aaw.WORKER_BRIEF, out["hookSpecificOutput"]["updatedInput"]["message"])
+        self.assertEqual(out["hookSpecificOutput"]["permissionDecision"], "allow")
         records = list((self.project / ".aaw/runtime/events").glob("*.json"))
         self.assertEqual(len(records), 1)
         record = json.loads(records[0].read_text(encoding="utf-8"))

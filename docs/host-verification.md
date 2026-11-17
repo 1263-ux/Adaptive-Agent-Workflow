@@ -132,3 +132,7 @@ Until a `PreToolUse` record exists and a child reports the injected brief, the p
 ## Codex delegation follow-up
 
 On Windows with Codex 0.162.1 and the widened matcher, a real delegation displayed `hook: PreToolUse Failed`; `PostToolUse` recorded `spawn_agent`. The earlier handler did not record PreToolUse at all, so an absent record was not evidence of absent host emission. The handler now records matching PreToolUse events before producing its response. A record establishes invocation, not that Codex accepted `updatedInput` or that a child received the brief. The failure cause and prompt rewrite remain unverified.
+
+## Codex PreToolUse protocol follow-up
+
+Codex `rust-v0.162.1` validates `updatedInput` only when accompanied by `permissionDecision: allow`; without it, its parser reports `PreToolUse hook returned updatedInput without permissionDecision:allow`. Its hook runtime passes rewritten input to normal tool dispatch, which continues the ordinary tool execution and approval path. The Codex response now uses this required combination; Claude's response remains unchanged. This fixes the response format, not a demonstrated end-to-end delegation rewrite. A separately trusted logging wrapper was not invoked for a real `collaboration.spawn_agent` call on this host, so neither its payload nor a rewritten prompt was observed. The upstream [spawn_agent PreToolUse issue](https://github.com/openai/codex/issues/49736) reports a similar host limitation. Continue to treat delivery of the brief through this event as unverified.

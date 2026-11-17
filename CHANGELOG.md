@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.4 — 2026-11-17
+- Recognize unmarked PowerShell encoded AAW commands during reinstall and uninstall, preserving unrelated hooks.
+- Record matching `PreToolUse` invocations and correct the interpretation of missing event records.
+- Emit `permissionDecision: allow` alongside `updatedInput` for Codex only, as required by the Codex 0.162.1 parser. This is a permission-decision field; its effect on real host approval has not been independently tested. Claude's output is unchanged. End-to-end child prompt rewriting remains unverified.
+
 ## 0.6.3 — 2026-11-16
 - Widen the dispatch matchers to tolerate a namespace prefix: `(?:^|\.)(?:Agent|Task|spawn_agent)$` and the matching collection form, in the installer and both checked-in host configs. Codex dispatches as `collaboration.spawn_agent`, which an anchored alternation can never match.
 - Record the first real Codex delegation in `docs/host-verification.md`: the child saw no injected brief and no `PreToolUse` record was written, keeping the prompt rewrite UNVERIFIED and separating hook matching from `updatedInput` support.

@@ -4,7 +4,7 @@ Scope: subprocess-level execution of the new hook implementation and installer, 
 
 Observed:
 - Incoming task context directs specialist preparation before producing the specialist result.
-- The actual child prompt/message gains the execution brief and saved capability reference; other arguments are preserved and no permission decision is added.
+- The actual child prompt/message gains the execution brief and saved capability reference; other arguments are preserved; the Claude Code response adds no permission decision, while Codex returns `permissionDecision: allow` with `updatedInput` (see the host verification permission boundary).
 - SubagentStop writes an unreviewed handoff and returns no continuation.
 - Delegation/collection return sends integration/next-action guidance to the caller, not back to the child; running/ID-only results are not declared completed.
 - A new session receives the saved next action from the existing progress file.

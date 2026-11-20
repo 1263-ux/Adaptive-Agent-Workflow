@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Read reusable evaluation assets from `catalog.yaml` in `open-agent-evals` at a pinned commit instead of re-deriving them per task; `capability-discovery.md` now states the selection rules and the current pin.
 - Match Codex's observed flattened collaboration tool names as well as dotted names, and record the actual host name.
 - Leave opaque Codex child messages unchanged rather than appending plaintext to an encrypted-looking token; child prompt injection for those messages remains unavailable.
 

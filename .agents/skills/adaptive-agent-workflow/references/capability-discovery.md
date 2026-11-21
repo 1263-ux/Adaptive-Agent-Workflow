@@ -36,7 +36,7 @@ When the task needs an evaluation standard, a regression gate, or a method that 
 - Do not fork a pack, rubric or method into this repository. Cite its id and version. When an asset does not fit, record the gap as a new experiment rather than editing the asset locally.
 - Local discovery and the remote catalog are different things: the index answers "what is installed here", the catalog answers "what evidence exists". Do not treat an indexed Skill as a verified method.
 
-Current pin: `open-agent-evals@6fd1875d5dcff17a7f82bf2146e4d8fab4f5c774` (`catalog.yaml`). Bump it deliberately; asset ids and versions carry the meaning, not the catalog file.
+Current pin: `open-agent-evals@9cae8e9c4498474c56899cc519c23418da8fc095` (`catalog.yaml`). Bump it deliberately; asset ids and versions carry the meaning, not the catalog file.
 
 ## 7 Orthogonal Lifecycle States
 

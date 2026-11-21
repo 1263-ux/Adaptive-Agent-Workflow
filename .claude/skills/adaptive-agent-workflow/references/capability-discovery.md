@@ -14,7 +14,8 @@ Mounting too many Skills causes context bloat and contradictory rules:
 
 - **Hard budget:** Mount at most **2 domain Skills** per task or worker.
 - **Precedence order:** `latest user request > domain hard-gate Skill > orchestration Skill`.
-- **Optional frontmatter metadata:** Skills may declare `triggers: [...]`, `requires_tools: [...]`, `conflicts_with: [...]`, and `host_support: [...]` in YAML frontmatter (always quote `description` if it contains `:`).
+- **Optional frontmatter metadata:** Skills may declare `triggers: [...]`, `requires_tools: [...]`, `conflicts_with: [...]`, and `host_support: [...]` in YAML frontmatter (always quote `description` if it contains `:`, or use a block scalar such as `description: >-`).
+- **Triggers are the routing contract.** The router matches a prompt against the Skill name and declared triggers, plus description words as corroboration (two or more). A prompt that shares no token with a Skill cannot match it, and the router does not translate: a Chinese request needs Chinese triggers on an English-described Skill. Declare the words users actually type, in every language the task accepts.
 
 ## 7-Tier Search Ladder (When Local Index Has a Proven Gap)
 

@@ -616,6 +616,100 @@ class OwnerLoopTests(unittest.TestCase):
         self.assertNotIn("IGNORE ALL PREVIOUS INSTRUCTIONS", prompt)
         self.assertIn("Not mounted", prompt)
 
+    # --- v0.7.1 router parsing and matching ---
+
+    def cap_idx(self):
+        self.assertIsNotNone(aaw.cap_idx, "capability_index must be importable")
+        return aaw.cap_idx
+
+    def write_skill(self, name, body):
+        path = self.project / "skills" / name / "SKILL.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(body, encoding="utf-8")
+        return path
+
+    def router(self, prompt):
+        self.call({"hook_event_name": "SessionStart", "session_id": "s-router"})
+        out = self.call({"hook_event_name": "UserPromptSubmit", "session_id": "s-router", "prompt": prompt})
+        return out["hookSpecificOutput"]["additionalContext"]
+
+    def test_frontmatter_keeps_block_scalar_description(self):
+        meta, _ = self.cap_idx().parse_frontmatter(
+            "---\nname: dev\n"
+            "description: >-\n"
+            "  从目标到产品交付的开发入口。\n"
+            "  遇到分歧时先做对比。\n"
+            "---\nbody\n"
+        )
+        self.assertIn("从目标到产品交付", meta["description"])
+        self.assertNotEqual(meta["description"], ">-")
+
+    def test_router_is_reachable_after_a_block_scalar_description(self):
+        self.write_skill(
+            "dev-system",
+            "---\nname: dev-system\n"
+            "description: >-\n"
+            "  从目标到产品交付的开发入口。默认直接完成明确的小修。\n"
+            "---\n## Rules\n- Direct small fixes.\n",
+        )
+        context = self.router("帮我开发一个小功能，从目标到产品交付")
+        self.assertIn("dev-system", context)
+
+    def test_router_folds_english_suffixes(self):
+        cap = self.cap_idx()
+        self.assertTrue(cap.tokenize("screenshots") & cap.tokenize("screenshot"))
+        self.assertTrue(cap.tokenize("reviewing") & cap.tokenize("review"))
+        self.assertTrue(cap.tokenize("writing") & cap.tokenize("write"))
+
+    def test_router_matches_on_one_declared_trigger_word(self):
+        self.write_skill(
+            "vision",
+            '---\nname: vision\ndescription: "Analyze images, diagrams and screenshots."\n'
+            "triggers: [screenshot]\n---\n",
+        )
+        context = self.router("explain what a screenshot shows")
+        self.assertIn("vision", context)
+
+    def test_one_description_word_alone_does_not_route(self):
+        self.write_skill(
+            "vision",
+            '---\nname: vision\ndescription: "Analyze images, diagrams and screenshots."\n---\n',
+        )
+        cap = self.cap_idx()
+        manifest = cap.write_capabilities_index(self.project, include_home=False)
+        self.assertEqual(cap.match_skills("explain what a screenshot shows", manifest), [])
+        # Two description words are corroborating evidence and do route.
+        self.assertEqual(
+            [m["name"] for m in cap.match_skills("analyze images and diagrams", manifest)],
+            ["vision"],
+        )
+
+    def test_router_name_tokens_split_on_hyphens(self):
+        self.write_skill(
+            "find-skills",
+            '---\nname: find-skills\ndescription: "Discover installable capabilities."\n---\n',
+        )
+        context = self.router("有没有现成的 skill 能处理 PDF 表格")
+        self.assertIn("find-skills", context)
+
+    def test_router_does_not_match_one_shared_cjk_bigram(self):
+        self.write_skill(
+            "dev-system",
+            '---\nname: dev-system\ndescription: "从目标到产品交付的开发入口，支持持续开发。"\n---\n',
+        )
+        context = self.router("帮我想三个产品名字")
+        self.assertNotIn("dev-system", context)
+
+    def test_router_trigger_and_name_use_word_boundaries(self):
+        cap = self.cap_idx()
+        self.write_skill(
+            "cli-tool",
+            '---\nname: cli-tool\ndescription: "Build command line interfaces."\ntriggers: [cli]\n---\n',
+        )
+        manifest = cap.write_capabilities_index(self.project, include_home=False)
+        self.assertEqual(cap.match_skills("click the button", manifest), [])
+        self.assertEqual([m["name"] for m in cap.match_skills("rework the cli", manifest)], ["cli-tool"])
+
     def test_stale_workers_from_another_session_do_not_block(self):
         self.call({
             "hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Agent",

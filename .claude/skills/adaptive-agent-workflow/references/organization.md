@@ -1,58 +1,36 @@
-# Dynamic Organization
+# Dynamic Organization & Collaboration Contracts
 
-## Principle
-Organize around work and outputs, not permanent Agent titles. There is no required Root → Lead → Worker → Reviewer hierarchy. The current owner may execute directly, delegate or change the organization as evidence emerges.
+Organize around inspectable outputs and net ROI—never permanent org charts (`Root -> Lead -> Worker -> Reviewer`).
 
-## Respect project phases
-A project may need separate preparation and production phases. If the user asks to establish the system first, organize only the preparation work: capability research, Skill discovery, team design, workflow, environment checks and acceptance planning. Do not silently start product implementation. Production roles may be proposed, but must be clearly distinguished from active participants.
+## Single-Agent Default vs. Multi-Agent ROI
 
-## Delegate only for a reason
-Delegate when an independent inspectable output exists and there is a real benefit: distinct expertise, parallel time savings, context isolation or independent evaluation. Do not delegate merely because a task is large or has many steps.
+A single owner riding a warm prompt cache is faster and cheaper for ~80% of tasks. Do **not** split work just because a task is large; splitting pays cold-start reading cost, breaks KV-cache locality, and imposes a manager tax on the owner.
 
-Judge net benefit, not size. Delegation is a poor trade when the whole change stays inside the owner context, when several short edits would sit behind a coordination round-trip, or when each child would need the same reading pass the owner already did. Splitting three related files across three children is the canonical failure: three partial views, one integration cost, no parallel gain. Keep the work and do it.
+Delegate **only** in three positive-ROI modes:
 
-## Make capability ownership explicit when relevant
-For multi-owner or specialist work, each active participant should have:
-- Responsibility and concrete output.
-- Skills/tools actually available or loaded.
-- Any capability gap and discovery task.
-- Whether downstream delegation is needed.
-- Status and blocker.
+1. **Scout (`Role: scout`) — Context Firewall:** Read-only exploration across noisy logs, large unfamiliar directories, or broad web research. Protects the owner's context window by returning a distilled `<500`-word brief (`file paths`, `verified facts`, `Dead-Ends`, `open risks`).
+2. **Worktree Builder (`Role: builder`) — Orthogonal Parallelism:** Independent modules with a **frozen interface** and **disjoint `Owned-Paths`**. When running 2+ builders concurrently, isolate each builder in its own `git worktree` (`Worktree: <path>`) so test runners, build caches, and `.git/index.lock` do not contend.
+3. **Blind Verifier (`Role: verifier`) — Cognitive De-biasing:** Read-only adversarial check on high-impact or large diffs (default threshold: `>3` files or `>100` changed lines). The verifier sees **only** acceptance criteria, frozen interfaces, actual diffs/artifacts, and command exit codes—never the builder's rationalization.
 
-Do not invent participants or report planned capabilities as mounted. If the host cannot isolate or load capabilities per child Agent, state the limitation and use the supported fallback.
+## 4-Field Dispatch Contract
 
-## Minimal task brief
-For ordinary work, pass only Goal, Output, Inputs, Constraints and Acceptance. Add dependencies, owner, write scope, baseline/version, budget and integration plan only when needed.
+Include these lightweight fields in every subagent dispatch prompt so `PreToolUse` can enforce boundaries and inline mounted Skills:
 
-## Topologies
-Direct, Sequential, Research-first, Probe-first, Parallel and Hybrid are all valid. Choose and change topology as the task evolves.
+```text
+Role: scout | builder | verifier
+Owned-Paths: src/api/, tests/api/
+Mounted-Skills: refactor-gate
+Worktree: ../wt-api   # required when 2+ builders run concurrently
+Acceptance: pytest tests/api -q (exit 0), no weakened assertions
+```
 
-| Situation | Default | Why |
-|---|---|---|
-| Goal clear, a handful of files, low risk | Direct | Coordination cost exceeds any parallel gain |
-| Unknowns decide the design | Research-first or Probe-first | One inspected answer replaces several guesses |
-| Independent modules sharing a boundary | Parallel with a frozen interface | Parallelism pays only when the contract holds still |
-| Shared context, one artifact built in steps | Sequential | Handoffs would re-read the same context |
-| High impact, expensive to reverse | Builder plus independent verifier | The producer own claim is the weakest evidence |
+- **Overlap blocking:** `PreToolUse` registers active workers in `.aaw/runtime/workers.json` and blocks concurrent `builder` dispatches whose `Owned-Paths` overlap in the same worktree. Paths are compared by component (`src/api` and `src/apiv2` do not conflict). Active workers left by a previous session or older than `AAW_WORKER_TTL_HOURS` are marked `stale` and stop blocking.
+- **Attribution is not identity:** the host does not tell a `SubagentStop` which dispatch it belongs to. The handler uses `agent_id` when known, then a single active worker, then `Touched-Files`. With concurrent workers and no signal it records `unattributed` and withholds supersede and out-of-bounds judgments rather than blaming the wrong worker.
+- **Warm collaborator reuse:** Reuse a warm collaborator already holding a module (`workers.json`) for follow-up fixes instead of cold-starting a duplicate worker.
+- **Offload evaluation to scripts:** Let deterministic tests, linters, and `git diff` gates do 80% of verification so the owner remains a player-coach, not a pure PM.
 
-Selection is provisional: move to a stronger topology when evidence shows the current one failing, and back to Direct when it is not needed.
+## Interface Breakage, Superseding & Dead-Ends
 
-## Freeze the shared interface before parallel writes
-Before dispatching parallel work that touches a shared boundary, the owner defines the part others depend on - type definitions, API signatures, schema, file layout, naming - and passes it in every brief. Children fill their own scope but do not redefine the boundary. When the boundary must change, the owner changes it once, tells every active child and reconciles the results. A contract that lives only in the owner head is not a contract.
-
-## Reuse a warm collaborator
-A collaborator holds context the owner does not. When follow-up work belongs to the same module - a failing test, a review correction, an extension of the same artifact - return it to the collaborator that produced it. Start a new one when the responsibility actually changes: a different module, an independent verifier, or isolation from a context that has gone wrong. If the host cannot resume a collaborator, carry its paths, decisions and constraints into the new brief and say that a fresh context is in use.
-
-## Handoff
-Preserve goal/current state, verified findings, decisions, completed artifact locations, blockers/risks, and next action/acceptance. Do not copy entire chat histories unless needed.
-
-## Shared state and dependency cycles
-Before concurrent writes, use host-enforced isolation, separate worktrees/sandboxes, a single-writer policy or explicit file ownership. Prompt-only boundaries are not enforcement.
-
-When tasks form a dependency cycle, the accountable owner should break the cycle deliberately: clarify the true dependency, introduce a minimal interface/stub or provisional artifact, or rescope/reorder the tasks. Do not let agents wait on one another indefinitely. A stub is a temporary coordination device, not a requirement for ordinary tasks.
-
-## Requirement changes and stale results
-When a requirement or task baseline changes, the owner should mark affected work as superseded and communicate the new target. Late results from superseded work must not overwrite newer artifacts. Use host-enforced branch/worktree/version checks where available; otherwise require the owner to inspect and explicitly integrate late results. Do not impose version bookkeeping on simple sequential work.
-
-## Restructure and review
-Split, merge, reassign, pause, resume or stop tasks as needed. Preserve useful completed work and mark superseded outputs. If nested delegation is unsupported, use flat dispatch. Review effort matches risk; independent review should inspect actual artifacts. A different session ID alone does not prove independence.
+- **Structured handoff envelope:** Workers return compact fields when applicable (`Status:`, `Touched-Files:`, `Skills-Applied:`, `Interface-Status: OK|BROKEN`, `Dead-Ends:`).
+- **Superseding stale siblings:** If a builder reports `Interface-Status: BROKEN`, `SubagentStop` increments `interface_version` in `.aaw/runtime/workers.json` and marks active sibling workers `superseded`. `PostToolUse` warns the owner to discard stale outputs before integrating.
+- **Negative memory (`Dead-Ends`):** Record disproved approaches in `.aaw/current.md` under `Dead-Ends:` so neither warm retries nor fresh sessions repeat failed paths.

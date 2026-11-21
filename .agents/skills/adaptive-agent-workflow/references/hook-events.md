@@ -1,29 +1,37 @@
-# Owner-loop hooks
+# Hook Events & Runtime Contracts
 
-The portable executable is `scripts/adaptive_checkpoint.py` inside this Skill. The repository's `scripts/adaptive_checkpoint.py` delegates to it. Install the complete Skill, not only SKILL.md.
+The portable Python hook (`scripts/adaptive_checkpoint.py` + `scripts/capability_index.py`) connects real host lifecycle events to `.aaw/current.md` and `.aaw/runtime/` with zero network calls, zero LLM calls, and zero auto-installation.
 
-| Event | Actual behavior |
-|---|---|
-| SessionStart / UserPromptSubmit | Add the owner's working approach and current-work file to the receiving context. Latest user intent takes priority. |
-| PreToolUse on Agent / Task / spawn_agent | Append scoped execution instructions and current capability references to the actual child prompt/message; preserve other arguments and permissions. |
-| SubagentStop | Save the worker's reported result locally for owner inspection; no child continuation. |
-| PostToolUse on delegation/collection tools | Tell the caller to inspect the result/status, integrate/correct a delivered artifact, update current work and execute the next action. A returned ID is not completion. |
-| Stop | Only with active saved work, request one continuation carrying the actual next-action note. No note, done/paused/blocked, or an already-active stop hook produces no continuation. |
+## Supported Events
 
-Claude Code uses `hookSpecificOutput.additionalContext`; Codex uses the same context form except Stop continuation uses `decision: block` and `reason`. This is continuation, not a permission gate. `PreToolUse.updatedInput` augments only known child prompt fields. Local tool names/coverage depend on the host version; unavailable hooks fall back to the explicit owner loop.
+1. **`SessionStart` / `UserPromptSubmit`**
+   - `SessionStart` refreshes `.aaw/runtime/capabilities.json` (read-only local Skill & CLI scan).
+   - `UserPromptSubmit` runs deterministic Top-2 Skill routing and injects `[AAW capability router]` with `READY / MISSING_TOOL` preflight status alongside `OWNER_START` and `.aaw/current.md` (truncated at 6,000 chars with an explicit marker).
+2. **`PreToolUse`** (matches `Agent`, `Task`, `spawn_agent`, including namespaced/flattened Codex forms)
+   - Parses optional dispatch contract fields (`Role: scout|builder|verifier`, `Owned-Paths:`, `Mounted-Skills:`, `Worktree:`).
+   - **Conflict block:** Blocks concurrent `builder` dispatches whose `Owned-Paths` overlap in the same worktree (`permissionDecision: deny` on Claude Code, `decision: block` on Codex). Overlap is compared by path components, so `src/api` and `src/apiv2` are distinct; worktrees are compared after resolution.
+   - **Role-aware briefs:** Injects `SCOUT_BRIEF` for explicit `scout`, isolated `VERIFIER_BRIEF` (without builder prose) for explicit `verifier`, and `WORKER_BRIEF` for `builder`/default.
+   - **Physical Skill inlining:** Inlines distilled rules for up to 2 `Mounted-Skills` entries that resolve to indexed Skills. Arbitrary paths are rejected and named in the brief.
+   - Records active worker metadata in `.aaw/runtime/workers.json`, including `session_id`, `requested_skills` and applied `mounted_skills` separately. Workers left active by a previous session, or older than `AAW_WORKER_TTL_HOURS` (default 12), are marked `stale` before conflict checks.
+3. **`SubagentStop`**
+   - Saves truncated worker report (4,000 chars) + parsed structured envelope (`Status`, `Touched-Files`, `Skills-Applied`, `Interface-Status`, `Dead-Ends`) to `.aaw/runtime/handoffs/`.
+   - **Attribution:** The host does not correlate a stop event with its dispatch. The handler matches by `agent_id` if known, else a single active worker, else the `Touched-Files` envelope. With several active workers and no signal, the worker is recorded as `unattributed` and the handler does **not** guess: no sibling supersede and no out-of-bounds attribution.
+   - Checks staged, unstaged and untracked files against a builder's `Owned-Paths` and flags `out_of_bounds_files`.
+   - If `Interface-Status: BROKEN` on an attributed worker, increments `interface_version` and marks active sibling workers `superseded`. Never restarts the child.
+4. **`PostToolUse`** (matches dispatch and collection tools)
+   - Returns control to the owner (`OWNER_RETURN`) and appends `[AAW SUPERSEDED WARNING]` if any sibling workers were invalidated by an interface change.
+5. **`Stop`**
+   - All Stop decisions use `{"decision":"block","reason":...}`. `hookSpecificOutput.additionalContext` on Stop exists only from Claude Code 2.1.163, so it is not relied on.
+   - **Anti-cheat gate:** Inspects the uncommitted work (staged, unstaged and untracked) on test files; blocks if assertions were deleted or `@skip` / `xfail` / `.skip(` markers were added. A deliberate change is released by `Test-Change: <reason>` in the note.
+   - **Large-diff verifier gate:** When `Status: active` and the work exceeds thresholds (`AAW_VERIFIER_MAX_FILES=3` or `AAW_VERIFIER_MAX_LINES=100`) without a completed attributed `verifier` for that diff hash, injects `[AAW VERIFIER GATE]`. `Verifier-Waiver: <reason>` releases it.
+   - **Single continuation:** Continues once when `Status: active` and `stop_hook_active` is false (respecting `Session:` ownership). Gates run only when a current-work note exists.
+   - **Execution log:** When `Status: done`, appends one `aaw-trace@1` JSONL record per task to `.aaw/runtime/eval-trace.jsonl`; repeated Stops with the same session and diff hash do not duplicate it.
 
-Use the installer in the repository for project-specific commands. It pins the installed script, project and Python executable rather than relying on the current shell directory or Python alias. It merges these hooks with other existing settings.
+## Local Persistence
 
-## Persisted data
-
-`.aaw/current.md` is the owner's working note; an existing file may be selected with `--progress-file`. `.aaw/runtime/events/` records event observations, never inferred task success. `.aaw/runtime/handoffs/` stores bounded child reports as unreviewed data. Runtime records stay local and are ignored by Git. They are a future visibility input, not a finished dashboard or an automatic judge.
-
-Worker reports can contain errors or untrusted text. Inspect the artifacts they point to; do not treat a saved report as authorization or proof. Child reports are limited to 4,000 characters; a transcript path can identify more context without automatically reading it. Hook output is bounded. There is no network call, auto-installation, model call or scheduling inside this handler.
-
-## Sources and verification boundary
-
-Protocol references checked during implementation:
-- https://code.claude.com/docs/en/hooks : PreToolUse.updatedInput, parent feedback via PostToolUse(Agent), SessionStart, Stop.
-- https://learn.chatgpt.com/docs/hooks : local-tool hooks, spawn_agent alias, shared context shape, Stop continuation.
-
-Repository tests exercise local command/configuration/event flows. They are not evidence of a live Dot, Codex or Claude Code session adopting the chosen method. Record host/version and a real artifact when validating that behavior.
+- `.aaw/current.md` — Owner-maintained working note (`Status`, `Goal`, `Next`, `Dead-Ends`, optional `Session`).
+- `.aaw/runtime/capabilities.json` — Read-only local Skill & CLI index.
+- `.aaw/runtime/workers.json` — Worker roster (`active` / `completed` / `superseded` / `unattributed` / `stale`), `interface_version`, per-worker `attribution`, `requested_skills` and applied `mounted_skills`. Capped at 500 records.
+- `.aaw/runtime/events/` & `.aaw/runtime/handoffs/` — Raw observations and structured worker handoffs.
+- `.aaw/runtime/eval-trace.jsonl` — One `aaw-trace@1` execution log record per finished task.
+- `.aaw/runtime/eval-trace-state.json` — Dedupe keys for the trace log (last 200).

@@ -20,11 +20,19 @@ import tempfile
 from typing import Any
 
 MAX_MOUNTED_SKILLS = 2
+MIN_MATCH_SCORE = 4
 SELF_SKILL_NAME = "adaptive-agent-workflow"
 STOPWORDS = {
     "the", "and", "for", "with", "that", "this", "from", "into", "your", "have",
     "will", "when", "then", "only", "used", "using", "use", "work", "task", "file",
     "files", "code", "make", "help", "please", "need", "want", "check", "run",
+    # Function words: a single one must never be enough to route a prompt.
+    "is", "are", "was", "were", "be", "been", "of", "to", "in", "on", "at", "by",
+    "or", "if", "it", "its", "as", "do", "does", "did", "how", "what", "which",
+    "who", "where", "why", "there", "here", "can", "could", "should", "would",
+    "may", "might", "must", "my", "our", "their", "them", "these", "those", "one",
+    "two", "three", "some", "any", "all", "not", "no", "yes", "also", "just",
+    "more", "most", "than", "about", "after", "before", "over", "under", "between",
 }
 
 
@@ -40,22 +48,28 @@ def atomic_write(path: Path, text: str) -> None:
         temporary.unlink(missing_ok=True)
 
 
+BLOCK_SCALARS = {">", ">-", ">+", "|", "|-", "|+"}
+
+
 def parse_frontmatter(text: str) -> tuple[dict[str, Any], str]:
-    """Parse lightweight YAML frontmatter without requiring PyYAML."""
+    """Parse lightweight YAML frontmatter without requiring PyYAML.
+
+    Handles `key: value`, inline lists, and folded/literal block scalars.
+    A block scalar that is parsed as the literal `>-` silently erases the
+    description and removes that Skill from routing.
+    """
     lines = text.splitlines()
     meta: dict[str, Any] = {}
     body_start = 0
+    header_lines: list[str] = []
     if lines and lines[0].strip() == "---":
         for idx in range(1, len(lines)):
             if lines[idx].strip() == "---":
                 body_start = idx + 1
                 header_lines = lines[1:idx]
                 break
-        else:
-            header_lines = []
     else:
         # Fallback for legacy SKILL.md without leading --- fence (e.g. v0.6.0).
-        header_lines = []
         for idx, line in enumerate(lines):
             if re.match(r"^[a-zA-Z0-9_-]+:\s*", line):
                 header_lines.append(line)
@@ -63,13 +77,36 @@ def parse_frontmatter(text: str) -> tuple[dict[str, Any], str]:
             else:
                 break
 
-    for raw in header_lines:
+    index = 0
+    while index < len(header_lines):
+        raw = header_lines[index]
+        index += 1
         stripped = raw.strip()
         if not stripped or stripped.startswith("#") or ":" not in stripped:
             continue
         key, value = stripped.split(":", 1)
         key = key.strip().lower()
         value = value.strip()
+
+        if value in BLOCK_SCALARS:
+            block: list[str] = []
+            indent: int | None = None
+            while index < len(header_lines):
+                line = header_lines[index]
+                if not line.strip():
+                    block.append("")
+                    index += 1
+                    continue
+                lead = len(line) - len(line.lstrip())
+                if lead == 0:
+                    break
+                if indent is None:
+                    indent = lead
+                block.append(line[indent:] if lead >= indent else line.lstrip())
+                index += 1
+            meta[key] = "\n".join(block).strip()
+            continue
+
         if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
             value = value[1:-1]
         if value.startswith("[") and value.endswith("]"):
@@ -89,9 +126,32 @@ def _list_field(meta: dict[str, Any], key: str) -> list[str]:
     return []
 
 
+def _fold_ascii(token: str) -> str:
+    """Tiny suffix fold so screenshot/screenshots and write/writing meet.
+
+    Not a stemmer: it removes one common suffix, collapses a doubled final
+    consonant and drops a trailing `e` once the word is long enough to stay
+    unambiguous.
+    """
+    folded = token
+    for suffix in ("ing", "ed", "s"):
+        if len(folded) > len(suffix) + 2 and folded.endswith(suffix):
+            folded = folded[:-len(suffix)]
+            break
+    if len(folded) > 3 and folded[-1] == folded[-2] and folded[-1] not in "lsz":
+        folded = folded[:-1]
+    if len(folded) > 4 and folded.endswith("e"):
+        folded = folded[:-1]
+    return folded
+
+
+def _is_cjk(token: str) -> bool:
+    return bool(re.search(r"[\u4e00-\u9fff]", token))
+
+
 def tokenize(text: str) -> set[str]:
     ascii_words = {
-        tok.lower()
+        _fold_ascii(tok.lower())
         for tok in re.findall(r"[a-zA-Z0-9][a-zA-Z0-9_-]{1,}", text)
         if tok.lower() not in STOPWORDS and len(tok) >= 2
     }
@@ -233,28 +293,65 @@ def load_capabilities_index(project: Path, include_home: bool = True) -> dict[st
     return write_capabilities_index(project, include_home=include_home)
 
 
+def _contains_term(text_lower: str, term: str) -> bool:
+    """Word-boundary match for ASCII terms, substring match for CJK terms.
+
+    Substring matching made the trigger `cli` fire on `click` and the name
+    `vision` fire on `television`.
+    """
+    term = term.strip().lower()
+    if not term:
+        return False
+    if _is_cjk(term):
+        return term in text_lower
+    pattern = rf"(?<![a-z0-9_-]){re.escape(term)}(?![a-z0-9_-])"
+    return re.search(pattern, text_lower) is not None
+
+
 def match_skills(prompt: str, manifest: dict[str, Any], limit: int = MAX_MOUNTED_SKILLS) -> list[dict[str, Any]]:
-    """Deterministically rank top-K domain skills for a user prompt."""
+    """Deterministically rank top-K domain skills for a user prompt.
+
+    Declared metadata routes: a name mention is worth 10, a trigger 6, and a
+    word from the Skill name 4. Description words are corroborating evidence:
+    one is not enough, two or more route. A shared CJK bigram counts as weak
+    evidence because unrelated Chinese text shares many of them.
+    """
     if not prompt.strip():
         return []
     prompt_lower = prompt.lower()
     prompt_tokens = tokenize(prompt)
-    scored: list[tuple[int, dict[str, Any]]] = []
+
+    entries: list[tuple[dict[str, Any], set[str], set[str]]] = []
     for skill in manifest.get("skills", []):
         name = str(skill.get("name", ""))
         if not name or name == SELF_SKILL_NAME:
             continue
+        name_tokens: set[str] = set()
+        for part in re.split(r"[-_]+", name):
+            name_tokens |= tokenize(part)
+        tokens = name_tokens | tokenize(
+            name + " " + str(skill.get("description", ""))
+            + " " + " ".join(str(trigger) for trigger in skill.get("triggers", []))
+        )
+        entries.append((skill, tokens, name_tokens))
+
+    scored: list[tuple[int, dict[str, Any]]] = []
+    for skill, tokens, name_tokens in entries:
         score = 0
-        # Exact skill name mention is strongest signal.
-        if name.lower() in prompt_lower:
+        # Exact skill name mention is the strongest signal.
+        if _contains_term(prompt_lower, str(skill.get("name", ""))):
             score += 10
-        for trig in skill.get("triggers", []):
-            if trig.lower() in prompt_lower:
+        for trigger in skill.get("triggers", []):
+            if _contains_term(prompt_lower, str(trigger)):
                 score += 6
-        desc_tokens = tokenize(name + " " + str(skill.get("description", "")) + " " + " ".join(skill.get("triggers", [])))
-        overlap = prompt_tokens & desc_tokens
-        score += len(overlap) * 2
-        if score >= 4:
+        for token in prompt_tokens & tokens:
+            if _is_cjk(token):
+                score += 1
+            elif token in name_tokens:
+                score += 4
+            else:
+                score += 2
+        if score >= MIN_MATCH_SCORE:
             scored.append((score, skill))
 
     scored.sort(key=lambda item: (-item[0], item[1].get("name", "")))

@@ -14,7 +14,8 @@ Mounting too many Skills causes context bloat and contradictory rules:
 
 - **Hard budget:** Mount at most **2 domain Skills** per task or worker.
 - **Precedence order:** `latest user request > domain hard-gate Skill > orchestration Skill`.
-- **Optional frontmatter metadata:** Skills may declare `triggers: [...]`, `requires_tools: [...]`, `conflicts_with: [...]`, and `host_support: [...]` in YAML frontmatter (always quote `description` if it contains `:`).
+- **Optional frontmatter metadata:** Skills may declare `triggers: [...]`, `requires_tools: [...]`, `conflicts_with: [...]`, and `host_support: [...]` in YAML frontmatter (always quote `description` if it contains `:`, or use a block scalar such as `description: >-`).
+- **Triggers are the routing contract.** The router matches a prompt against the Skill name and declared triggers, plus description words as corroboration (two or more). A prompt that shares no token with a Skill cannot match it, and the router does not translate: a Chinese request needs Chinese triggers on an English-described Skill. Declare the words users actually type, in every language the task accepts.
 
 ## 7-Tier Search Ladder (When Local Index Has a Proven Gap)
 
@@ -35,7 +36,7 @@ When the task needs an evaluation standard, a regression gate, or a method that 
 - Do not fork a pack, rubric or method into this repository. Cite its id and version. When an asset does not fit, record the gap as a new experiment rather than editing the asset locally.
 - Local discovery and the remote catalog are different things: the index answers "what is installed here", the catalog answers "what evidence exists". Do not treat an indexed Skill as a verified method.
 
-Current pin: `open-agent-evals@6fd1875d5dcff17a7f82bf2146e4d8fab4f5c774` (`catalog.yaml`). Bump it deliberately; asset ids and versions carry the meaning, not the catalog file.
+Current pin: `open-agent-evals@9cae8e9c4498474c56899cc519c23418da8fc095` (`catalog.yaml`). Bump it deliberately; asset ids and versions carry the meaning, not the catalog file.
 
 ## 7 Orthogonal Lifecycle States
 

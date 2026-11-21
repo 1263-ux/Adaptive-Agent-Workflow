@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.1 — 2026-11-21
+- Fix frontmatter parsing of YAML block scalars (`description: >-`, `|`). The hand-rolled parser stored the literal `>-`, which erased the description and removed that Skill from routing; the maintainer's own `dev-system` Skill was affected.
+- Fold common English suffixes (`screenshot`/`screenshots`, `review`/`reviewing`), split Skill names on `-`/`_`, and count a word from the Skill name as a strong signal. One description word still does not route; two do.
+- Match Skill names and triggers on word boundaries. `cli` no longer fires on `click`, and `vision` no longer fires on `television`.
+- Add function words to the stoplist so a single `is` or `what` cannot route a prompt.
+- Document that cross-language routing requires declared triggers; the router does not translate.
+- Router calibration on a fixed fixture: top-1 hit 14/21 → 16/21, negative false positives 2/10 → 0/10; with declared bilingual triggers, 21/21 and 0/10. Recorded in `open-agent-evals` as `exp-20261121-aaw-router-calibration`.
+- Tests: 49.
+
 ## 0.7.0 — 2026-11-21
 - Add `capability_index.py`: a read-only, zero-dependency local index of project/user Skills and CLI tools, written to `.aaw/runtime/capabilities.json`, and a deterministic Top-2 router injected on `UserPromptSubmit` with `READY` / `MISSING_TOOL` preflight. The router is unevaluated; no precision/recall data exists yet.
 - Add 4-field dispatch contracts (`Role`, `Owned-Paths`, `Mounted-Skills`, `Acceptance`): role-aware briefs, physical inlining of indexed Skill rules, and blocking of overlapping builder paths in the same worktree. Overlap is compared by path component, and worktrees are compared after resolution.

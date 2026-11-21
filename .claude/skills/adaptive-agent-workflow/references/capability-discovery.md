@@ -24,6 +24,16 @@ For a candidate, determine its purpose, method, applicability, source/version/li
 ## Select and compose
 Prefer mature upstream capabilities over rewriting them. Combine complementary methods, sequence dependent methods and resolve conflicts through applicability analysis or a small experiment. Avoid loading overlapping Skills without a reason. Preserve source/version/commit and prefer references or pinning over copying third-party Skill bodies.
 
+## Reusable evaluation and method assets
+
+When the task needs an evaluation standard, a regression gate, or a method that outlives this session, read the asset catalog in `1263-ux/open-agent-evals` before writing your own. Pin the read to a commit, not a moving branch.
+
+- Read `catalog.yaml` and select by `kind` (`evaluation-pack`, `method-asset`, `experiment-record`, `capability-profile`), `domain`, `status` and `applicability`. Open an asset's `path` only when its entry fits the task; the catalog is deliberately thin.
+- Treat `proposed` and `experimental` as unproven. A `verified` method is bound by its declared conditions, not by the headline claim. An experiment's `confidence` and `replay_status` travel with any number taken from it.
+- Do not fork a pack, rubric or method into this repository. Cite its id and version. When an asset does not fit, record the gap as a new experiment rather than editing the asset locally.
+
+Current pin: `open-agent-evals@5b956779efe3c1673b69f45bad102153efe2ae79` (`catalog.yaml`). Bump it deliberately; the asset ids and versions carry the meaning, not the catalog file.
+
 ## Distinguish lifecycle states
 - Discovered: metadata/source found.
 - Inspected: instructions/dependencies reviewed.

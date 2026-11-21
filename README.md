@@ -79,6 +79,8 @@ Local command/installer flows were exercised. Live Dot/Codex/Claude behavior and
 
 The companion repository [open-agent-evals](https://github.com/1263-ux/open-agent-evals) maintains reusable Evaluation Packs, Method Assets, Experiment Records and Capability Profiles. The two repositories remain independently versioned and connected through asset IDs, versions and Git references.
 
+The connection is mechanical: `catalog.yaml` in that repository is the index to read, at a pinned commit. `references/capability-discovery.md` explains how to select from it. This repository never forks an evaluation pack or method; it cites the asset id and version.
+
 ## What this is not
 
 Not a universal fixed workflow, mandatory multi-agent system, replacement for domain methods, new Agent Runtime, task database or Skills marketplace.

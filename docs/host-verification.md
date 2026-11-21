@@ -21,7 +21,11 @@ What a host **documents** is not what this package has **observed**. Keep the tw
 | PostToolUse returns work to the owner | documented | documented | no |
 | SubagentStop saves a handoff | documented | documented | no |
 | Stop continuation and its recursion guard | documented (`stop_hook_active`) | `Stop` documented; a `stop_hook_active` field is UNVERIFIED | no |
+| Stop gates via `{"decision":"block","reason":...}` | documented | documented | no |
+| `additionalContext` on Stop | documented from 2.1.163; unsupported earlier (docs still inconsistent) | not used by this package | no |
 | Windows command form | documented | `commandWindows` is not in the documented schema - UNVERIFIED | no |
+
+v0.7.0 uses `decision:block` for every Stop gate precisely because `additionalContext` on Stop is version-dependent. The gates are still UNVERIFIED here in the sense that no live session has been observed returning them.
 
 ## Two failures that look exactly like silence
 

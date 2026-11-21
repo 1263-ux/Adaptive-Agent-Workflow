@@ -6,9 +6,18 @@
 
 ## Status
 
-**v0.6.0 — fewer files that speak in one voice, a reversible installer, and host behaviour separated from host documentation.**
+**v0.7.0 — a local capability router, 4-field dispatch contracts, host-enforced gates, and an execution log.**
 
-The owner chooses and applies the method, produces a useful slice, inspects returned work and performs the next action. Hooks connect these actions to real session/delegation events; they do not replace the owner's judgment with a permission checklist.
+The owner chooses and applies the method, produces a useful slice, inspects returned work and performs the next action. Hooks connect these actions to real session/delegation events.
+
+v0.7.0 adds enforcement to that loop, deliberately and with limits:
+
+- **Local capability index and router.** `SessionStart` indexes project and user Skills plus local CLI tools; `UserPromptSubmit` pushes the top matches with `READY` / `MISSING_TOOL` preflight. At most two domain Skills mount per task. The router is deterministic and unevaluated: treat it as a hint, and record `SKIP_SKILL` when you bypass a match.
+- **Dispatch contracts.** `Role`, `Owned-Paths`, `Mounted-Skills`, `Acceptance`. `PreToolUse` inlines rules only for indexed Skills, blocks overlapping builder paths in the same worktree, and marks stale workers from dead sessions instead of blocking forever.
+- **Stop gates.** Weakened tests and large unverified diffs block the stop through `decision:block`; `Test-Change:` and `Verifier-Waiver:` release them deliberately. The scan covers staged, unstaged and untracked work.
+- **Execution log.** One `aaw-trace@1` record per finished task. It is local execution data, not evaluation evidence.
+
+These gates are guardrails for a cooperating operator, not a security boundary, and they do not replace the owner's judgment. No model calls, background scheduler or database are added.
 
 ## Install in the actual work project
 
@@ -71,9 +80,9 @@ GitHub Actions checks mirror consistency, hook syntax/behavior and host configur
 
 ## Progress and visibility
 
-The owner maintains one short working note, normally `.aaw/current.md`. Hooks save local event observations and worker handoffs under `.aaw/runtime/`. Session entry/resume reads current work; delegation returns send actionable context back to the owner. These are readable inputs for a later panel, not a dashboard or an automatic proof of success.
+The owner maintains one short working note, normally `.aaw/current.md`. Hooks save local state under Git-ignored `.aaw/runtime/`: the capability index, the worker roster, event observations, worker handoffs, the `aaw-trace@1` execution log and its dedupe keys. Session entry/resume reads current work; delegation returns send actionable context back to the owner. These are readable inputs for a later panel, not a dashboard or an automatic proof of success.
 
-Local command/installer flows were exercised. Live Dot/Codex/Claude behavior and output quality still require actual host observation; the verification report separates those claims.
+Local command/installer flows and 41 protocol tests were exercised on Windows and in CI. Live Dot/Codex/Claude behavior, router quality and output quality still require actual host observation; the verification report separates those claims.
 
 ## Related evaluation assets
 

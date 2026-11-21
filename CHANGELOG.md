@@ -1,9 +1,17 @@
 # Changelog
 
-## Unreleased
-- Read reusable evaluation assets from `catalog.yaml` in `open-agent-evals` at a pinned commit instead of re-deriving them per task; `capability-discovery.md` now states the selection rules and the current pin.
+## 0.7.0 — 2026-11-21
+- Add `capability_index.py`: a read-only, zero-dependency local index of project/user Skills and CLI tools, written to `.aaw/runtime/capabilities.json`, and a deterministic Top-2 router injected on `UserPromptSubmit` with `READY` / `MISSING_TOOL` preflight. The router is unevaluated; no precision/recall data exists yet.
+- Add 4-field dispatch contracts (`Role`, `Owned-Paths`, `Mounted-Skills`, `Acceptance`): role-aware briefs, physical inlining of indexed Skill rules, and blocking of overlapping builder paths in the same worktree. Overlap is compared by path component, and worktrees are compared after resolution.
+- Add Stop gates: anti-cheat on deleted assertions and added skip markers, and a blind-verifier requirement for large diffs. Both cover staged, unstaged and untracked work; `Test-Change:` and `Verifier-Waiver:` release them. Stop uses `decision:block`, which works on every host version (`additionalContext` on Stop only exists from Claude Code 2.1.163).
+- Add worker state to `.aaw/runtime/workers.json`: active/completed/superseded/stale/unattributed, `requested_skills` vs applied `mounted_skills`, and `interface_version`. A worker is never marked by guesswork: when several are active and nothing correlates the stop, it is recorded as `unattributed` and no sibling is superseded.
+- Add one `aaw-trace@1` execution log record per finished task with a dedupe key; repeated Stops on the same task no longer duplicate the sample. The log is execution data, not evaluation evidence.
+- Read reusable evaluation assets from `catalog.yaml` in `open-agent-evals` at a pinned commit instead of re-deriving them per task.
 - Match Codex's observed flattened collaboration tool names as well as dotted names, and record the actual host name.
 - Leave opaque Codex child messages unchanged rather than appending plaintext to an encrypted-looking token; child prompt injection for those messages remains unavailable.
+- Fix the unquoted-colon `description` in `SKILL.md` frontmatter and validate it in CI.
+- Tests: 31 protocol tests in the submitted bundle, 41 after adding gate, attribution, dedupe, path, trust and stale-worker coverage.
+- Not done: live host verification of the gates, router calibration, and an `open-agent-evals` consumer for the trace log.
 
 ## 0.6.4 — 2026-11-17
 - Recognize unmarked PowerShell encoded AAW commands during reinstall and uninstall, preserving unrelated hooks.
